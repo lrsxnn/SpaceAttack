@@ -106,11 +106,11 @@ export class NotificationCenter {
         return wait_end;
     }
 
-    public static isBlockNotifications() {
+    public static isBlockNotifications(): boolean {
         return NotificationCenter.is_block_notifications;
     }
 
-    public static blockNotifications() {
+    public static blockNotifications(): boolean {
         return NotificationCenter.is_block_notifications = true;
     }
 

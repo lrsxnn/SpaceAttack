@@ -12,7 +12,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Bulllet",
+    "_name": "EnemyBulllet",
     "_objFlags": 0,
     "_parent": null,
     "_children": [],
@@ -75,7 +75,7 @@
     },
     "_materials": [
       {
-        "__uuid__": "d3c7820c-2a98-4429-8bc7-b8453bc9ac41",
+        "__uuid__": "40f04827-5844-4bf8-9029-7e4de18cfe5e",
         "__expectedType__": "cc.Material"
       }
     ],
@@ -124,7 +124,7 @@
       "__id__": 6
     },
     "_material": null,
-    "_isTrigger": false,
+    "_isTrigger": true,
     "_center": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -149,7 +149,7 @@
     "__prefab": {
       "__id__": 8
     },
-    "_group": 1,
+    "_group": 16,
     "_type": 4,
     "_mass": 1,
     "_allowSleep": true,
@@ -185,6 +185,7 @@
     "__prefab": {
       "__id__": 10
     },
+    "speed": 0.05,
     "_id": ""
   },
   {

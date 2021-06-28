@@ -24,3 +24,4 @@ node_modules/
 .idea/
 
 preview-template/
+.DS_Store

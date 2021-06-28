@@ -1,10 +1,13 @@
 import { SpaceAttack } from '../Tools/Tools';
 
-import { _decorator, Component, Node, SphereCollider, Vec3, NodePool } from 'cc';
+import { _decorator, Component, Node, SphereCollider, Vec3, NodePool, sp } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('Bullet')
 export class Bullet extends Component {
+    @property
+    speed = 0.05;
+
     private _fixedTimeStep: number = 0.02;
     private _lastTime: number = 0;
     private _radius: number = 0.5;
@@ -13,6 +16,12 @@ export class Bullet extends Component {
 
     onLoad() {
         this._radius = this.node.getComponent(SphereCollider)!.radius;
+
+        this.node.getComponent(SphereCollider)!.on('onTriggerEnter', this.onTriggerEnter, this);
+    }
+
+    onTriggerEnter() {
+        this._bulletPool.put(this.node);
     }
 
     update(dt: number) {
@@ -33,13 +42,14 @@ export class Bullet extends Component {
         }
 
         let desiredVelocity = new Vec3();
-        Vec3.multiplyScalar(desiredVelocity, this._velocity, 0.05);
+        Vec3.multiplyScalar(desiredVelocity, this._velocity, this.speed);
         lastPos.add(desiredVelocity);
 
         this.node.setPosition(lastPos);
     }
 
-    move(velocity: Vec3) {
+    move(velocity: Vec3, speed: number) {
+        this.speed = speed;
         this._velocity = velocity;
     }
 

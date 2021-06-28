@@ -7,6 +7,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SpaceShip')
 export class SpaceShip extends Component {
+    @property
+    speed = 0.05;
+
     private _axisHorizontal = 0;
     private _axisVertical = 0;
     private _wDown: boolean = false;
@@ -121,7 +124,7 @@ export class SpaceShip extends Component {
         playerInput = SpaceAttack.UnityVec2.clampMagnitude(playerInput, 1);
 
         let desiredVelocity = new Vec3();
-        Vec3.multiplyScalar(desiredVelocity, new Vec3(playerInput.x, playerInput.y, 0), 0.05);
+        Vec3.multiplyScalar(desiredVelocity, new Vec3(playerInput.x, playerInput.y, 0), this.speed);
 
         let lastPos = this.node.position.clone();
         lastPos.add(desiredVelocity);

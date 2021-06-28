@@ -130,6 +130,24 @@ export namespace SpaceAttack {
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min + 1)) + min;
         };
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getRandom(min: number, max: number): number {
+            return Math.random() * (max - min) + min;
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getRandomInclusive(min: number, max: number): number {
+            return Math.random() * (max - min + 1) + min;
+        };
     }
 
     export class UnityVec2 {
@@ -149,4 +167,5 @@ export namespace SpaceAttack {
     }
 
     export const allowedArea = new Rect(-9.5, -14, 19, 28);
+    export const baseSpeed = 0.05;
 }
