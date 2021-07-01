@@ -1,6 +1,6 @@
 
 export enum NotificationMessage {
-    CREATE_BULLET = 'CREATE_BULLET',
-    FIRE = 'FIRE',
+    ENEMY_FIRE = 'ENEMY_FIRE',
+    SPACECRAFT_FIRE = 'SPACECRAFT_FIRE',
 }
 

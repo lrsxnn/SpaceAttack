@@ -12,7 +12,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "SpaceShipBulllet",
+    "_name": "SpacecraftBulllet",
     "_objFlags": 0,
     "_parent": null,
     "_children": [],
@@ -84,7 +84,7 @@
       "__id__": 4
     },
     "_mesh": {
-      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@17020",
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@38fd2",
       "__expectedType__": "cc.Mesh"
     },
     "_shadowCastingMode": 0,
@@ -185,7 +185,6 @@
     "__prefab": {
       "__id__": 10
     },
-    "speed": 0.05,
     "_id": ""
   },
   {

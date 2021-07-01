@@ -12,7 +12,7 @@
     "collisionGroups": [
       {
         "index": 1,
-        "name": "SpaceShip"
+        "name": "Spacecraft"
       },
       {
         "index": 2,
@@ -20,7 +20,7 @@
       },
       {
         "index": 3,
-        "name": "SpaceShipBullet"
+        "name": "SpacecraftBullet"
       },
       {
         "index": 4,

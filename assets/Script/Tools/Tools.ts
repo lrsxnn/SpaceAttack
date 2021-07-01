@@ -167,5 +167,5 @@ export namespace SpaceAttack {
     }
 
     export const allowedArea = new Rect(-9.5, -14, 19, 28);
-    export const baseSpeed = 0.05;
+    export const baseSpeed = 10;
 }

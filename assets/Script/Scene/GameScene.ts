@@ -1,14 +1,10 @@
-import { NotificationCenter } from './../Notification/NotificationCenter';
-import { NotificationMessage } from './../Notification/NotificationMessage';
-import { BulletEd } from '../Data/BulletData';
-
-import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard } from 'cc';
+import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard, error, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameScene')
 export class GameScene extends Component {
     @property(Node)
-    spaceShip: Node = null!;
+    spacecraft: Node = null!;
     @property(Node)
     enemy: Node = null!;
 
@@ -35,8 +31,12 @@ export class GameScene extends Component {
     }
 
     start() {
-        this.schedule(() => {
-            BulletEd.notifyEvent(NotificationMessage.CREATE_BULLET, this.enemy.position.clone());
-        }, 1);
+        // this.schedule(() => {
+        //     error(Vec3.angle(this.spacecraft.position, this.enemy.position) * 180 / Math.PI);
+        // }, 1);
+    }
+
+    public getNearestEnemy(): Node {
+        return this.enemy;
     }
 }

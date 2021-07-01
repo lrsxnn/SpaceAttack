@@ -1,5 +1,7 @@
+import { NotificationMessage } from './../Notification/NotificationMessage';
 
-import { _decorator, Component, Node, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Node, Vec2, Vec3, error } from 'cc';
+import { BulletEd } from '../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 const { ccclass, property } = _decorator;
 
@@ -16,6 +18,13 @@ export class Enemy extends Component {
 
     private _changePos = true;
     private _changePosTime = 0;
+
+    start() {
+        this.schedule(() => {
+            BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        }, 1);
+    }
+
     update(dt: number) {
         this._lastTime += dt;
         let fixedTime = this._lastTime / this._fixedTimeStep;

@@ -86,7 +86,7 @@ export class SpaceShip extends Component {
             this._fireTime += dt;
             if (this._fireTime > this._fireTimeStep) {
                 this._fireTime -= this._fireTimeStep;
-                NotificationCenter.sendNotification(NotificationMessage.FIRE, this.node.position.clone());
+                NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE, this.node.position.clone());
             }
         }
     }
