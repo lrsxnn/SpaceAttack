@@ -15,11 +15,22 @@ export class BulletData {
     public speed: number = 10;
     /**  @param 加速度 */
     public acceleration: number = 0;
+    /**  @param 半径 */
+    public radius: number = 0.5;
+    /** @param 高度 */
+    public height: number = 1;
+    
+    public scaleX: number = 1;
+    public scaleY: number = 1;
 
     /** @param 延迟变化时间 */
     public delayTime: number = 0;
     /** @param 目标节点 */
     public targetNode: Node | null = null;
+    /** @param 持续时间 */
+    public lifeTime: number = Infinity;
+    /** @param 边界检查开关 */
+    public boundaryCheck = true;
 
     /**
      * @param position 坐标

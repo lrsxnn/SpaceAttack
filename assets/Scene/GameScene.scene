@@ -616,6 +616,30 @@
       "__uuid__": "28eca3ed-7755-4543-bb46-c19e6ee318da",
       "__expectedType__": "cc.Prefab"
     },
+    "enemySphere": {
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@17020",
+      "__expectedType__": "cc.Mesh"
+    },
+    "enemyCone": {
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@38fd2",
+      "__expectedType__": "cc.Mesh"
+    },
+    "enemyCylinder": {
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@8abdc",
+      "__expectedType__": "cc.Mesh"
+    },
+    "spacecraftSphere": {
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@17020",
+      "__expectedType__": "cc.Mesh"
+    },
+    "spacecraftCone": {
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@38fd2",
+      "__expectedType__": "cc.Mesh"
+    },
+    "spacecraftCylinder": {
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@8abdc",
+      "__expectedType__": "cc.Mesh"
+    },
     "_id": "0ebl8LMBBPI4E9Hv6qdmsc"
   },
   {
@@ -739,7 +763,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 431.19239209948796,
+    "_orthoHeight": 443.52144469525956,
     "_near": 1,
     "_far": 2000,
     "_color": {

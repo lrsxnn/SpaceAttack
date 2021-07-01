@@ -21,8 +21,12 @@ export class SpaceShip extends Component {
     private _fixedTimeStep: number = 0.02;
     private _lastTime: number = 0;
 
-    private _fireTimeStep: number = 0.05;
-    private _fireTime: number = this._fireTimeStep;
+    private _fireStraightLineTimeStep: number = 0.05;
+    private _fireStraightLineTime: number = this._fireStraightLineTimeStep;
+    private _fireTrackingTimeStep: number = 0.1;
+    private _fireTrackingTime: number = this._fireTrackingTimeStep;
+    private _fireLaserTimeStep: number = 2;
+    private _fireLaserTime: number = this._fireLaserTimeStep;
     onLoad() {
         systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDown, this);
         systemEvent.on(SystemEventType.KEY_UP, this.onKeyUp, this);
@@ -69,7 +73,9 @@ export class SpaceShip extends Component {
                 break;
             case macro.KEY.space:
                 this._spaceDown = false;
-                this._fireTime = this._fireTimeStep;
+                this._fireStraightLineTime = this._fireStraightLineTimeStep;
+                this._fireTrackingTime = this._fireTrackingTimeStep;
+                this._fireLaserTime = this._fireLaserTimeStep;
                 break;
         }
     }
@@ -83,10 +89,20 @@ export class SpaceShip extends Component {
         this._lastTime = this._lastTime % this._fixedTimeStep;
 
         if (this._spaceDown) {
-            this._fireTime += dt;
-            if (this._fireTime > this._fireTimeStep) {
-                this._fireTime -= this._fireTimeStep;
-                NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE, this.node.position.clone());
+            this._fireStraightLineTime += dt;
+            this._fireTrackingTime += dt;
+            this._fireLaserTime += dt;
+            if (this._fireStraightLineTime > this._fireStraightLineTimeStep) {
+                this._fireStraightLineTime -= this._fireStraightLineTimeStep;
+                NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_STRAIGHTLINE, this.node.position.clone());
+            }
+            if (this._fireTrackingTime > this._fireTrackingTimeStep) {
+                this._fireTrackingTime -= this._fireTrackingTimeStep;
+                NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_TRACKING, this.node.position.clone());
+            }
+            if (this._fireLaserTime > this._fireLaserTimeStep) {
+                this._fireLaserTime -= this._fireLaserTimeStep;
+                NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_LASER, this.node.position.clone());
             }
         }
     }
