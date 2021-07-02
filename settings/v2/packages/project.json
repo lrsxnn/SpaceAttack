@@ -34,5 +34,15 @@
       "3": 4,
       "4": 2
     }
-  }
+  },
+  "layer": [
+    {
+      "name": "BackGround",
+      "value": 1
+    },
+    {
+      "name": "Game",
+      "value": 2
+    }
+  ]
 }

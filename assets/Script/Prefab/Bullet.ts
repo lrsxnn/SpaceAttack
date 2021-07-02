@@ -12,35 +12,9 @@ export class Bullet extends Component {
     private _data: BulletData = null!;
     private _bulletPool: NodePool = null!;
 
-    init(data: BulletData) {
-        this._data = data;
-        this.node.setScale(new Vec3(this._data.scaleX, this._data.scaleY, 1));
-
-        if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
-            let startPos = new Vec3();
-            Vec3.add(startPos, this._data.followNode.position.clone(), this._data.followPosition);
-            this.node.setPosition(startPos);
-        } else {
-            this.node.setPosition(this._data.position);
-        }
-        this.node.setRotation(this._data.rotation);
-
-        this.node.getComponent(Collider)!.on('onTriggerEnter', this.onTriggerEnter, this);
-    }
-
-    bulletDead() {
-        let collider = this.node.getComponent(Collider);
-        if (collider) {
-            collider.off('onTriggerEnter', this.onTriggerEnter, this);
-            collider.destroy();
-        }
-        this._bulletPool.put(this.node);
-    }
-
-    onTriggerEnter() {
-        if (this._data.boundaryCheck) {
-            this.bulletDead();
-        }
+    private _damage: number = 1;
+    public get damage(): number {
+        return this._damage;
     }
 
     update(dt: number) {
@@ -77,12 +51,45 @@ export class Bullet extends Component {
 
     }
 
-    unuse() {
-
+    onTriggerEnter() {
+        if (this._data.boundaryCheck) {
+            this.bulletDead();
+        }
     }
 
     reuse(arg: any) {
         this.setPool(arg[0]);
+    }
+
+    unuse() {
+
+    }
+
+    private bulletDead() {
+        let collider = this.node.getComponent(Collider);
+        if (collider) {
+            collider.off('onTriggerEnter', this.onTriggerEnter, this);
+            collider.destroy();
+        }
+        this._bulletPool.put(this.node);
+    }
+
+    public init(data: BulletData) {
+        this._data = data;
+        this._damage = this._data.damage;
+
+        this.node.setScale(new Vec3(this._data.scaleX, this._data.scaleY, 1));
+
+        if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
+            let startPos = new Vec3();
+            Vec3.add(startPos, this._data.followNode.position.clone(), this._data.followPosition);
+            this.node.setPosition(startPos);
+        } else {
+            this.node.setPosition(this._data.position);
+        }
+        this.node.setRotation(this._data.rotation);
+
+        this.node.getComponent(Collider)!.on('onTriggerEnter', this.onTriggerEnter, this);
     }
 
     public setPool(bulletPool: NodePool) {
@@ -97,18 +104,6 @@ export class Bullet extends Component {
             return this._data.position.x < SpaceAttack.allowedArea.xMin - this._data.radius || this._data.position.x > SpaceAttack.allowedArea.xMax + this._data.radius || this._data.position.y < SpaceAttack.allowedArea.yMin - this._data.radius || this._data.position.y > SpaceAttack.allowedArea.yMax + this._data.radius;
         } else {
             return false;
-        }
-    }
-
-    /**
-     * 减少子弹生命时间
-     */
-    protected runLifeTime(dt: number) {
-        if (this._data.lifeTime != Infinity) {
-            this._data.lifeTime -= dt;
-            if (this._data.lifeTime <= 0) {
-                this.bulletDead();
-            }
         }
     }
 
@@ -141,5 +136,17 @@ export class Bullet extends Component {
         let displacement = new Vec3();
         Vec3.multiplyScalar(displacement, this._data.velocity, dt);
         this._data.position.add(displacement);
+    }
+
+    /**
+     * 减少子弹生命时间
+     */
+    protected runLifeTime(dt: number) {
+        if (this._data.lifeTime != Infinity) {
+            this._data.lifeTime -= dt;
+            if (this._data.lifeTime <= 0) {
+                this.bulletDead();
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
+import { Bullet } from './Bullet';
 import { NotificationMessage } from './../Notification/NotificationMessage';
 
-import { _decorator, Component, Node, Vec2, Vec3, error } from 'cc';
+import { _decorator, Component, Node, Vec2, Vec3, error, BoxCollider, ITriggerEvent } from 'cc';
 import { BulletEd } from '../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 const { ccclass, property } = _decorator;
@@ -9,6 +10,10 @@ const { ccclass, property } = _decorator;
 export class Enemy extends Component {
     @property
     speed = 0.02;
+    @property
+    damage = 1;
+    @property
+    hp = 100;
 
     private _axisHorizontal = 0;
     private _axisVertical = 0;
@@ -18,6 +23,16 @@ export class Enemy extends Component {
 
     private _changePos = true;
     private _changePosTime = 0;
+
+    onLoad() {
+        this.node.getComponent(BoxCollider)!.on('onTriggerEnter', this.onTriggerStay, this);
+        this.node.getComponent(BoxCollider)!.on('onTriggerStay', this.onTriggerStay, this);
+    }
+
+    onDestroy() {
+        this.node.getComponent(BoxCollider)!.off('onTriggerEnter', this.onTriggerStay, this);
+        this.node.getComponent(BoxCollider)!.off('onTriggerStay', this.onTriggerStay, this);
+    }
 
     start() {
         this.schedule(() => {
@@ -95,6 +110,18 @@ export class Enemy extends Component {
             lastPos.y = SpaceAttack.allowedArea.yMax;
         }
         this.node.setPosition(lastPos);
+    }
+
+    onTriggerStay(event: ITriggerEvent) {
+        let node = event.otherCollider.node;
+        let bullet = node.getComponent(Bullet)
+        if (bullet) {
+            this.hp -= bullet.damage;
+        }
+    }
+
+    public init(){
+        
     }
 }
 
