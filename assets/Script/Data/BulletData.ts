@@ -13,13 +13,15 @@ export class BulletData {
     public inputDirection: Vec3 = new Vec3();
     /** @param 移动快慢 */
     public speed: number = 10;
+    /** @param 伤害 */
+    public damage: number = 1;
     /**  @param 加速度 */
     public acceleration: number = 0;
     /**  @param 半径 */
     public radius: number = 0.5;
     /** @param 高度 */
     public height: number = 1;
-    
+
     public scaleX: number = 1;
     public scaleY: number = 1;
 
@@ -31,19 +33,25 @@ export class BulletData {
     public lifeTime: number = Infinity;
     /** @param 边界检查开关 */
     public boundaryCheck = true;
+    /** @param 跟随节点 */
+    public followNode: Node | null = null;
+    /** @param 跟随距离 */
+    public followPosition: Vec3 | null = null;
 
     /**
      * @param position 坐标
      * @param rotation 旋转角度
      * @param inputDirection 移动方向
      * @param speed 移动快慢
+     * @param damage 伤害
      * @param acceleration 加速度
      */
-    constructor(position: Vec3, rotation: number = 0, inputDirection: Vec3 = Vec3.UP.clone(), speed: number = 10, acceleration: number = 0) {
+    constructor(position: Vec3, rotation: number = 0, inputDirection: Vec3 = Vec3.UP.clone(), speed: number = 10, damage: number = 1, acceleration: number = 0) {
         this.position = position;
         Quat.fromAngleZ(this.rotation, -rotation);
         this.inputDirection = inputDirection;
         this.speed = speed;
+        this.damage = damage;
         this.acceleration = acceleration;
         Vec3.multiplyScalar(this.velocity, this.inputDirection, this.speed);
     }

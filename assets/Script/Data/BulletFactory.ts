@@ -10,10 +10,11 @@ export class BulletFactory {
      * @param inputDirection 方向
      * @param rotation 旋转角度
      * @param radius 半径
+     * @param damage 伤害
      * @returns BulletData
      */
-    public createStraightLineBulletData(startPosition: Vec3, speed: number, inputDirection: Vec3, rotation: number, radius: number): BulletData {
-        let data = new BulletData(startPosition, rotation, inputDirection, speed);
+    public createStraightLineBulletData(startPosition: Vec3, speed: number, inputDirection: Vec3, rotation: number, radius: number, damage: number): BulletData {
+        let data = new BulletData(startPosition, rotation, inputDirection, speed, damage);
         data.radius = radius;
         return data;
     }
@@ -28,10 +29,11 @@ export class BulletFactory {
      * @param height 高度
      * @param targetNode 目标节点
      * @param delayTime 延迟时间
+     * @param damage 伤害
      * @returns BulletData
      */
-    public createTrackingBulletData(startPosition: Vec3, speed: number, inputDirection: Vec3, rotation: number, radius: number, height: number, targetNode: Node, delayTime: number) {
-        let data = new BulletData(startPosition, rotation, inputDirection, speed);
+    public createTrackingBulletData(startPosition: Vec3, speed: number, inputDirection: Vec3, rotation: number, radius: number, height: number, targetNode: Node, delayTime: number, damage: number) {
+        let data = new BulletData(startPosition, rotation, inputDirection, speed, damage);
         data.radius = radius;
         data.height = height;
         data.targetNode = targetNode;
@@ -46,19 +48,23 @@ export class BulletFactory {
      * @param rotation 旋转角度
      * @param radius 半径
      * @param height 高度
+     * @param damage 伤害
      * @param targetNode 目标节点
      * @param delayTime 延迟时间
      * @param lifeTime 持续时间
+     * @pr
      * @returns BulletData
      */
-    public createLaserBulletData(startPosition: Vec3, inputDirection: Vec3, rotation: number, radius: number, height: number, targetNode: Node | null = null, delayTime: number = 0, lifeTime: number = 0) {
-        let data = new BulletData(startPosition, rotation, inputDirection, 0);
+    public createLaserBulletData(startPosition: Vec3, inputDirection: Vec3, rotation: number, radius: number, height: number, damage: number, targetNode: Node | null = null, delayTime: number = 0, lifeTime: number = 0, followNode: Node | null = null, followPosition: Vec3 | null = null) {
+        let data = new BulletData(startPosition, rotation, inputDirection, 0, damage);
         data.radius = radius;
         data.height = height;
         data.targetNode = targetNode;
         data.delayTime = delayTime;
         data.lifeTime = lifeTime;
         data.boundaryCheck = false;
+        data.followNode = followNode;
+        data.followPosition = followPosition;
         return data;
     }
 
@@ -76,9 +82,10 @@ export class BulletFactory {
             bullet = instantiate(prefab);
             bullet!.getComponent(Bullet)!.setPool(pool);
         }
-        bullet!.getComponent(MeshRenderer)!.mesh = mesh;
-
         parent.addChild(bullet!);
+
+        //必须先设置父节点再更改mesh
+        bullet!.getComponent(MeshRenderer)!.mesh = mesh;
 
         return bullet!.getComponent(Bullet)!;
     }

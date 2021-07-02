@@ -15,7 +15,14 @@ export class Bullet extends Component {
     init(data: BulletData) {
         this._data = data;
         this.node.setScale(new Vec3(this._data.scaleX, this._data.scaleY, 1));
-        this.node.setPosition(this._data.position);
+
+        if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
+            let startPos = new Vec3();
+            Vec3.add(startPos, this._data.followNode.position.clone(), this._data.followPosition);
+            this.node.setPosition(startPos);
+        } else {
+            this.node.setPosition(this._data.position);
+        }
         this.node.setRotation(this._data.rotation);
 
         this.node.getComponent(Collider)!.on('onTriggerEnter', this.onTriggerEnter, this);
@@ -58,7 +65,11 @@ export class Bullet extends Component {
             return;
         }
 
-        this.moveFoward(dt);
+        if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
+            Vec3.add(this._data.position, this._data.followNode.position.clone(), this._data.followPosition);
+        } else {
+            this.moveFoward(dt);
+        }
         this.node.setPosition(this._data.position);
     }
 

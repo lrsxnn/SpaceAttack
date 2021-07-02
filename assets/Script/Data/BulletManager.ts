@@ -39,7 +39,7 @@ export class BulletManager extends Component {
             let input = new Vec2(Math.sin(i / 8 * 2 * Math.PI), Math.cos(i / 8 * 2 * Math.PI));
             input = SpaceAttack.UnityVec2.clampMagnitude(input, 1);
 
-            let data = this._bulletFactory.createStraightLineBulletData(startPosition, SpaceAttack.baseSpeed, new Vec3(input.x, input.y, 0), i / 8 * 360, 0.5);
+            let data = this._bulletFactory.createStraightLineBulletData(startPosition, SpaceAttack.baseSpeed, new Vec3(input.x, input.y, 0), i / 8 * 360, 0.5, 1);
             this._bulletFactory.createSphereBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
         }
     }
@@ -48,10 +48,10 @@ export class BulletManager extends Component {
         let _startPos = new Vec3();
         //直线圆弹
         Vec3.add(_startPos, startPosition, new Vec3(-0.5, 0, 0))
-        let data = this._bulletFactory.createStraightLineBulletData(_startPos, SpaceAttack.baseSpeed * 3, Vec3.UP, 0, 0.5);
+        let data = this._bulletFactory.createStraightLineBulletData(_startPos, SpaceAttack.baseSpeed * 3, Vec3.UP, 0, 0.5, 1);
         this._bulletFactory.createSphereBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
         Vec3.add(_startPos, startPosition, new Vec3(0.5, 0, 0))
-        data = this._bulletFactory.createStraightLineBulletData(_startPos, SpaceAttack.baseSpeed * 3, Vec3.UP, 0, 0.5);
+        data = this._bulletFactory.createStraightLineBulletData(_startPos, SpaceAttack.baseSpeed * 3, Vec3.UP, 0, 0.5, 1);
         this._bulletFactory.createSphereBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
     }
 
@@ -63,26 +63,23 @@ export class BulletManager extends Component {
         let direction = new Vec2(Math.sin(1 / 8 * 2 * Math.PI), Math.cos(1 / 8 * 2 * Math.PI));
         direction = SpaceAttack.UnityVec2.clampMagnitude(direction, 1);
         Vec3.add(_startPos, startPosition, new Vec3(0.5, 0, 0))
-        let data = this._bulletFactory.createTrackingBulletData(_startPos, SpaceAttack.baseSpeed * 3, new Vec3(direction.x, direction.y, 0), 45, 0.5, 1, target, 0.1)
+        let data = this._bulletFactory.createTrackingBulletData(_startPos, SpaceAttack.baseSpeed * 3, new Vec3(direction.x, direction.y, 0), 45, 0.5, 1, target, 0.1, 1)
         this._bulletFactory.createConeBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCone, data);
 
         direction = new Vec2(Math.sin(7 / 8 * 2 * Math.PI), Math.cos(7 / 8 * 2 * Math.PI));
         direction = SpaceAttack.UnityVec2.clampMagnitude(direction, 1);
         Vec3.add(_startPos, startPosition, new Vec3(-0.5, 0, 0))
-        data = this._bulletFactory.createTrackingBulletData(_startPos, SpaceAttack.baseSpeed * 3, new Vec3(direction.x, direction.y, 0), 315, 0.5, 1, target, 0.1)
+        data = this._bulletFactory.createTrackingBulletData(_startPos, SpaceAttack.baseSpeed * 3, new Vec3(direction.x, direction.y, 0), 315, 0.5, 1, target, 0.1, 1)
         this._bulletFactory.createConeBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCone, data);
     }
 
-    spacecraftFireLaser(startPosition: Vec3) {
-        let _startPos = new Vec3();
-
+    spacecraftFireLaser(followNode: Node) {
+        let height = SpaceAttack.allowedArea.yMax - SpaceAttack.allowedArea.yMin;
         //激光
-        Vec3.add(_startPos, startPosition, new Vec3(2, 10, 0));
-        let data = this._bulletFactory.createLaserBulletData(_startPos, Vec3.UP, 0, 0.25, 10, null, 0.1, 1);
+        let data = this._bulletFactory.createLaserBulletData(Vec3.ZERO, Vec3.UP, 0, 0.25, height, 1, null, 0.1, 1, followNode, new Vec3(-2, height, 0));
         this._bulletFactory.createCylinderBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCylinder, data);
 
-        Vec3.add(_startPos, startPosition, new Vec3(-2, 10, 0));
-        data = this._bulletFactory.createLaserBulletData(_startPos, Vec3.UP, 0, 0.25, 10, null, 0.1, 1);
+        data = this._bulletFactory.createLaserBulletData(Vec3.ZERO, Vec3.UP, 0, 0.25, height, 1, null, 0.1, 1, followNode, new Vec3(2, height, 0));
         this._bulletFactory.createCylinderBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCylinder, data);
     }
 
@@ -108,34 +105,5 @@ export class BulletManager extends Component {
                 this.enemyFire(data);
                 break;
         }
-    }
-
-    /**
-     * 创建敌方直线子弹
-     */
-    private createEnemyStraightLineBullet(data: BulletData) {
-        this._bulletFactory.createSphereBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
-    }
-
-    /**
-     * 创建飞船直线子弹
-     */
-    private createSpacecraftStraightLineBullet(data: BulletData) {
-        this._bulletFactory.createSphereBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
-    }
-
-    /**
-     * 创建飞船追踪弹
-     */
-    private createSpacecraftTrackingBullet(data: BulletData) {
-        this._bulletFactory.createConeBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCone, data);
-    }
-
-    /**
-     * 创建飞船激光
-     */
-    private createSpcaecraftLaser(data: BulletData) {
-        this._bulletFactory.createCylinderBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCylinder, data);
-
     }
 }
