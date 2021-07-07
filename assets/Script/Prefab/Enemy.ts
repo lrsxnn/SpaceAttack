@@ -18,6 +18,10 @@ export class Enemy extends Component {
     private _axisHorizontal = 0;
     private _axisVertical = 0;
 
+    private _playerInput: Vec2 = new Vec2();
+    private _desiredVelocity: Vec3 = new Vec3();
+    private _lastPos: Vec3 = new Vec3();
+
     private _fixedTimeStep: number = 0.02;
     private _lastTime: number = 0;
 
@@ -90,26 +94,26 @@ export class Enemy extends Component {
             this._changePos = false;
         }
 
-        let playerInput = new Vec2(this._axisHorizontal, this._axisVertical);
-        playerInput = SpaceAttack.UnityVec2.clampMagnitude(playerInput, 1);
+        this._playerInput.set(this._axisHorizontal, this._axisVertical);
+        this._playerInput = SpaceAttack.UnityVec2.clampMagnitude(this._playerInput, 1);
 
-        let desiredVelocity = new Vec3();
-        Vec3.multiplyScalar(desiredVelocity, new Vec3(playerInput.x, playerInput.y, 0), this.speed);
+        this._desiredVelocity.set(this._playerInput.x, this._playerInput.y, 0);
+        this._desiredVelocity.multiplyScalar(this.speed);
 
-        let lastPos = this.node.position.clone();
-        lastPos.add(desiredVelocity);
+        this._lastPos = this.node.position.clone();
+        this._lastPos.add(this._desiredVelocity);
 
-        if (lastPos.x < SpaceAttack.allowedArea.xMin) {
-            lastPos.x = SpaceAttack.allowedArea.xMin;
-        } else if (lastPos.x > SpaceAttack.allowedArea.xMax) {
-            lastPos.x = SpaceAttack.allowedArea.xMax;
+        if (this._lastPos.x < SpaceAttack.allowedArea.xMin) {
+            this._lastPos.x = SpaceAttack.allowedArea.xMin;
+        } else if (this._lastPos.x > SpaceAttack.allowedArea.xMax) {
+            this._lastPos.x = SpaceAttack.allowedArea.xMax;
         }
-        if (lastPos.y < SpaceAttack.allowedArea.yMin) {
-            lastPos.y = SpaceAttack.allowedArea.yMin;
-        } else if (lastPos.y > SpaceAttack.allowedArea.yMax) {
-            lastPos.y = SpaceAttack.allowedArea.yMax;
+        if (this._lastPos.y < SpaceAttack.allowedArea.yMin) {
+            this._lastPos.y = SpaceAttack.allowedArea.yMin;
+        } else if (this._lastPos.y > SpaceAttack.allowedArea.yMax) {
+            this._lastPos.y = SpaceAttack.allowedArea.yMax;
         }
-        this.node.setPosition(lastPos);
+        this.node.setPosition(this._lastPos);
     }
 
     onTriggerStay(event: ITriggerEvent) {
@@ -120,8 +124,8 @@ export class Enemy extends Component {
         }
     }
 
-    public init(){
-        
+    public init() {
+
     }
 }
 

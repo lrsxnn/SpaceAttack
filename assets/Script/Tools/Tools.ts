@@ -1,5 +1,5 @@
 
-import { Vec2, _decorator, Rect } from 'cc';
+import { Vec2, _decorator, Rect, Vec3 } from 'cc';
 
 export namespace SpaceAttack {
     export class UnityMathf {
@@ -161,6 +161,20 @@ export namespace SpaceAttack {
                 let normalized_x = vector.x / mag;
                 let normalized_y = vector.y / mag;
                 return new Vec2(normalized_x * maxLength, normalized_y * maxLength);
+            }
+            return vector;
+        }
+    }
+
+    export class UnityVec3 {
+        public static clampMagnitude(vector: Vec3, maxLength: number): Vec3 {
+            let sqrmag = vector.lengthSqr();
+            if (sqrmag > maxLength * maxLength) {
+                let mag = Math.sqrt(sqrmag);
+                let normalized_x = vector.x / mag;
+                let normalized_y = vector.y / mag;
+                let normalized_z = vector.z / mag;
+                return new Vec3(normalized_x * maxLength, normalized_y * maxLength, normalized_z * maxLength);
             }
             return vector;
         }

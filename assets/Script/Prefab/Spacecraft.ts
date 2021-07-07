@@ -1,3 +1,4 @@
+import { Joystick } from './Joystick';
 import { Enemy } from './Enemy';
 import { Bullet } from './Bullet';
 import { NotificationCenter } from './../Notification/NotificationCenter';
@@ -14,13 +15,17 @@ export class Spacecraft extends Component {
     @property
     hp = 100;
 
-    private _axisHorizontal = 0;
-    private _axisVertical = 0;
+    private _keyboardDirection: Vec2 = new Vec2();
+    private _joystickDirection: Vec2 = new Vec2();
     private _wDown: boolean = false;
     private _sDown: boolean = false;
     private _aDown: boolean = false;
     private _dDown: boolean = false;
     private _spaceDown: boolean = false;
+
+    private _playerInput: Vec2 = new Vec2();
+    private _desiredVelocity: Vec3 = new Vec3();
+    private _lastPos: Vec3 = new Vec3();
 
     private _fixedTimeStep: number = 0.02;
     private _lastTime: number = 0;
@@ -36,6 +41,7 @@ export class Spacecraft extends Component {
         this.node.getComponent(ConeCollider)!.on('onTriggerStay', this.onTriggerStay, this);
 
         NotificationCenter.addObserver(this, this.onSetPlayerControll, NotificationMessage.SET_PLAYER_CONTROLL);
+        NotificationCenter.addObserver(this, this.onJoysticMove, NotificationMessage.JOYSTICK_MOVE);
     }
 
     onDestroy() {
@@ -43,6 +49,7 @@ export class Spacecraft extends Component {
         this.node.getComponent(ConeCollider)!.off('onTriggerStay', this.onTriggerStay, this);
 
         NotificationCenter.removeObserver(this, NotificationMessage.SET_PLAYER_CONTROLL);
+        NotificationCenter.removeObserver(this, NotificationMessage.JOYSTICK_MOVE);
     }
 
     update(dt: number) {
@@ -74,53 +81,62 @@ export class Spacecraft extends Component {
 
     fixedUpdate() {
         if (this._sDown) {
-            this._axisVertical -= 0.05;
-            if (this._axisVertical <= -1) {
-                this._axisVertical = -1;
+            this._keyboardDirection.y -= 0.05;
+            if (this._keyboardDirection.y <= -1) {
+                this._keyboardDirection.y = -1;
             }
         } else if (this._wDown) {
-            this._axisVertical += 0.05;
-            if (this._axisVertical >= 1) {
-                this._axisVertical = 1;
+            this._keyboardDirection.y += 0.05;
+            if (this._keyboardDirection.y >= 1) {
+                this._keyboardDirection.y = 1;
             }
         } else {
-            this._axisVertical = 0;
+            this._keyboardDirection.y = 0;
         }
 
         if (this._aDown) {
-            this._axisHorizontal -= 0.05;
-            if (this._axisHorizontal <= -1) {
-                this._axisHorizontal = -1;
+            this._keyboardDirection.x -= 0.05;
+            if (this._keyboardDirection.x <= -1) {
+                this._keyboardDirection.x = -1;
             }
         } else if (this._dDown) {
-            this._axisHorizontal += 0.05;
-            if (this._axisHorizontal >= 1) {
-                this._axisHorizontal = 1;
+            this._keyboardDirection.x += 0.05;
+            if (this._keyboardDirection.x >= 1) {
+                this._keyboardDirection.x = 1;
             }
         } else {
-            this._axisHorizontal = 0;
+            this._keyboardDirection.x = 0;
         }
 
-        let playerInput = new Vec2(this._axisHorizontal, this._axisVertical);
-        playerInput = SpaceAttack.UnityVec2.clampMagnitude(playerInput, 1);
-
-        let desiredVelocity = new Vec3();
-        Vec3.multiplyScalar(desiredVelocity, new Vec3(playerInput.x, playerInput.y, 0), this.speed);
-
-        let lastPos = this.node.position.clone();
-        lastPos.add(desiredVelocity);
-
-        if (lastPos.x < SpaceAttack.allowedArea.xMin) {
-            lastPos.x = SpaceAttack.allowedArea.xMin;
-        } else if (lastPos.x > SpaceAttack.allowedArea.xMax) {
-            lastPos.x = SpaceAttack.allowedArea.xMax;
+        if (this._joystickDirection.equals(Vec2.ZERO)) {
+            this._playerInput.set(this._keyboardDirection);
+        } else {
+            this._playerInput.set(this._joystickDirection);
         }
-        if (lastPos.y < SpaceAttack.allowedArea.yMin) {
-            lastPos.y = SpaceAttack.allowedArea.yMin;
-        } else if (lastPos.y > SpaceAttack.allowedArea.yMax) {
-            lastPos.y = SpaceAttack.allowedArea.yMax;
+        this._playerInput = SpaceAttack.UnityVec2.clampMagnitude(this._playerInput, 1);
+
+        this._desiredVelocity.set(this._playerInput.x, this._playerInput.y, 0);
+        this._desiredVelocity.multiplyScalar(this.speed);
+
+        this._lastPos = this.node.position.clone();
+        this._lastPos.add(this._desiredVelocity);
+
+        if (this._lastPos.x < SpaceAttack.allowedArea.xMin) {
+            this._lastPos.x = SpaceAttack.allowedArea.xMin;
+        } else if (this._lastPos.x > SpaceAttack.allowedArea.xMax) {
+            this._lastPos.x = SpaceAttack.allowedArea.xMax;
         }
-        this.node.setPosition(lastPos);
+        if (this._lastPos.y < SpaceAttack.allowedArea.yMin) {
+            this._lastPos.y = SpaceAttack.allowedArea.yMin;
+        } else if (this._lastPos.y > SpaceAttack.allowedArea.yMax) {
+            this._lastPos.y = SpaceAttack.allowedArea.yMax;
+        }
+        this.node.setPosition(this._lastPos);
+    }
+
+    onJoysticMove(direction: Vec3) {
+        this._joystickDirection.x = direction.x;
+        this._joystickDirection.y = direction.y;
     }
 
     onKeyDown(event: EventKeyboard) {
@@ -166,11 +182,11 @@ export class Spacecraft extends Component {
         }
     }
 
-    onSetPlayerControll(canControll: boolean){
-        if(canControll){
+    onSetPlayerControll(canControll: boolean) {
+        if (canControll) {
             systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDown, this);
             systemEvent.on(SystemEventType.KEY_UP, this.onKeyUp, this);
-        }else{
+        } else {
             systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDown, this);
             systemEvent.off(SystemEventType.KEY_UP, this.onKeyUp, this);
         }
@@ -188,7 +204,7 @@ export class Spacecraft extends Component {
         }
     }
 
-    public init(){
+    public init() {
 
     }
 }

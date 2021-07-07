@@ -1,7 +1,7 @@
 import { BulletData } from './../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 
-import { _decorator, Component, Vec3, NodePool, Quat, Vec2, Collider, error } from 'cc';
+import { _decorator, Component, Vec3, NodePool, Quat, Vec2, Collider, error, math } from 'cc';
 const { ccclass } = _decorator;
 
 @ccclass('Bullet')
@@ -16,6 +16,9 @@ export class Bullet extends Component {
     public get damage(): number {
         return this._damage;
     }
+
+    private _newDirection: Vec2 = new Vec2();
+    private _desiredVelocity: Vec3 = new Vec3();
 
     update(dt: number) {
         this._lastTime += dt;
@@ -81,12 +84,10 @@ export class Bullet extends Component {
         this.node.setScale(new Vec3(this._data.scaleX, this._data.scaleY, 1));
 
         if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
-            let startPos = new Vec3();
-            Vec3.add(startPos, this._data.followNode.position.clone(), this._data.followPosition);
-            this.node.setPosition(startPos);
-        } else {
-            this.node.setPosition(this._data.position);
+            Vec3.add(this._data.position, this._data.followNode.position.clone(), this._data.followPosition);
         }
+
+        this.node.setPosition(this._data.position);
         this.node.setRotation(this._data.rotation);
 
         this.node.getComponent(Collider)!.on('onTriggerEnter', this.onTriggerEnter, this);
@@ -112,14 +113,14 @@ export class Bullet extends Component {
      */
     protected lookAtTarget() {
         if (this._data.targetNode !== null && this._data.targetNode.isValid) {
-            let newDirection = new Vec2(this._data.targetNode.position.x - this.node.position.x, this._data.targetNode.position.y - this.node.position.y);
+            this._newDirection.set(this._data.targetNode.position.x - this.node.position.x, this._data.targetNode.position.y - this.node.position.y);
 
-            let angle = newDirection.signAngle(Vec2.UNIT_Y) * 180 / Math.PI;
+            let angle = math.toDegree(this._newDirection.signAngle(Vec2.UNIT_Y));
             Quat.fromAngleZ(this._data.rotation, -angle);
             this.node.setRotation(this._data.rotation);
 
-            newDirection = SpaceAttack.UnityVec2.clampMagnitude(newDirection, 1);
-            this._data.changeVelocity(new Vec3(newDirection.x, newDirection.y, 0));
+            this._newDirection = SpaceAttack.UnityVec2.clampMagnitude(this._newDirection, 1);
+            this._data.changeVelocity(new Vec3(this._newDirection.x, this._newDirection.y, 0));
         }
     }
 
@@ -127,15 +128,13 @@ export class Bullet extends Component {
      * 前进
      */
     protected moveFoward(dt: number) {
-        let desiredVelocity = new Vec3();
-        Vec3.multiplyScalar(desiredVelocity, this._data.inputDirection, this._data.speed);
+        Vec3.multiplyScalar(this._desiredVelocity, this._data.inputDirection, this._data.speed);
         let maxSpeedChange = this._data.acceleration * dt;
-        this._data.velocity.x = SpaceAttack.UnityMathf.moveTowards(this._data.velocity.x, desiredVelocity.x, maxSpeedChange);
-        this._data.velocity.y = SpaceAttack.UnityMathf.moveTowards(this._data.velocity.y, desiredVelocity.y, maxSpeedChange);
+        this._data.velocity.x = SpaceAttack.UnityMathf.moveTowards(this._data.velocity.x, this._desiredVelocity.x, maxSpeedChange);
+        this._data.velocity.y = SpaceAttack.UnityMathf.moveTowards(this._data.velocity.y, this._desiredVelocity.y, maxSpeedChange);
 
-        let displacement = new Vec3();
-        Vec3.multiplyScalar(displacement, this._data.velocity, dt);
-        this._data.position.add(displacement);
+        Vec3.multiplyScalar(this._desiredVelocity, this._data.velocity, dt);
+        this._data.position.add(this._desiredVelocity);
     }
 
     /**
