@@ -1,0 +1,33 @@
+{
+  "game": {
+    "app_id": "657091958",
+    "c_id": "0",
+    "name": "SpaceAttack"
+  },
+  "appConfigMaps": [
+    {
+      "app_id": "UNKNOW",
+      "config_id": "381aa7"
+    },
+    {
+      "app_id": "657091958",
+      "config_id": "225044"
+    }
+  ],
+  "configs": [
+    {
+      "app_id": "UNKNOW",
+      "config_id": "381aa7",
+      "config_name": "Default",
+      "config_remarks": "",
+      "services": []
+    },
+    {
+      "app_id": "657091958",
+      "config_id": "225044",
+      "config_name": "Default",
+      "config_remarks": "",
+      "services": []
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 
-import { Vec2, _decorator, Rect, Vec3 } from 'cc';
+import { Vec2, _decorator, Rect, Vec3, error, sys, Node, UITransform, log, Size } from 'cc';
 
 export namespace SpaceAttack {
     export class UnityMathf {
@@ -182,4 +182,57 @@ export namespace SpaceAttack {
 
     export const allowedArea = new Rect(-9.5, -14, 19, 28);
     export const baseSpeed = 10;
+
+    export const mgobe_gameId: string = 'obg-7pl76q6r'
+    export const mgobe_config: MGOBE.types.ConfigPara = {
+        url: '7pl76q6r.wxlagame.com',
+        reconnectMaxTimes: 5,
+        reconnectInterval: 1000,
+        resendInterval: 1000,
+        resendTimeout: 10000,
+    }
+
+    export class SysTools {
+        public static resizeByScreenSize(ui: UITransform, isSetLand: boolean) {
+            if (sys.isNative) {
+                let screen_ratio = SpaceAttack.SysTools.getScreenRatio(isSetLand);
+                let screen_aspect = screen_ratio.width / screen_ratio.height;
+                let ui_aspect = ui.width / ui.height;
+                if (screen_aspect > ui_aspect) {
+                    ui.width *= screen_aspect / ui_aspect;
+                } else if (screen_aspect < ui_aspect) {
+                    ui.height *= ui_aspect / screen_aspect;
+                }
+            }
+        }
+
+        public static getScreenRatio(isSetLand: boolean): Size {
+            let string_ratio = SpaceAttack.NativeSysTools.getScreenRatio();
+            let ratio = string_ratio.split(',');
+            let width = 0, height = 0;
+            if (isSetLand) {
+                width = Math.max(Number(ratio[0]), Number(ratio[1]));
+                height = Math.min(Number(ratio[0]), Number(ratio[1]));
+            } else {
+                width = Math.min(Number(ratio[0]), Number(ratio[1]));
+                height = Math.max(Number(ratio[0]), Number(ratio[1]));
+            }
+            log(`屏幕分辨率=${width}:${height}`);
+            return new Size(width, height);
+        }
+    }
+
+    export class NativeSysTools {
+        public static getScreenRatio() {
+            let string_ratio = "";
+            if (sys.OS_ANDROID == sys.os) {
+                string_ratio = jsb.reflection.callStaticMethod("game/SystemTool", "getScreenRatio", "()Ljava/lang/String;");
+            } else if (sys.OS_IOS == sys.os) {
+                // string_ratio = jsb.reflection.callStaticMethod('SystemTool', 'getScreenRatio');
+            } else {
+                string_ratio = '2688,1242';
+            }
+            return string_ratio;
+        }
+    }
 }
