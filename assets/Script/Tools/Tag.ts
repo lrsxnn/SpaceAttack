@@ -4,7 +4,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Tag')
 export class Tag extends Component {
-    @property
+    @property({ visible: false })
     tag: any = null;
 }
 

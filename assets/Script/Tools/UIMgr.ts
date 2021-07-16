@@ -1,3 +1,4 @@
+import { ResLoader } from './ResLoader';
 import { Tag } from './Tag';
 
 import { _decorator, Node, find, log, resources, Prefab, UITransform, Vec3, tween, instantiate, error, sys, warn } from 'cc';
@@ -159,29 +160,25 @@ class UIMgr {
                 this.showActS2B(ui);
                 return ui;
             } else {
-                resources.load(path, Prefab, (err, prefab) => {
-                    if (err) {
-                        error(err.message || err);
-                    } else {
-                        log(`加载UI:${name}`);
-                        let ui = this.getUI(name);
-                        if (!ui) {
-                            ui = instantiate(prefab);
-                            let canvas = find('Canvas');
-                            if (canvas === null) {
-                                return null;
-                            }
-                            ui.parent = canvas;
-                            SpaceAttack.SysTools.resizeByScreenSize(ui.getComponent(UITransform)!, true);
-                            ui.name = name;
-                            log(`打开UI by 加载:${name}`);
+                ResLoader.loadPrefab(path, (prefab: Prefab) => {
+                    log(`加载UI:${name}`);
+                    let ui = this.getUI(name);
+                    if (!ui) {
+                        ui = instantiate(prefab);
+                        let canvas = find('Canvas');
+                        if (canvas === null) {
+                            return null;
                         }
-                        if (onOpen) {
-                            onOpen(ui);
-                        }
-                        this.showActS2B(ui);
+                        ui.parent = canvas;
+                        SpaceAttack.SysTools.resizeByScreenSize(ui.getComponent(UITransform)!, true);
+                        ui.name = name;
+                        log(`打开UI by 加载:${name}`);
                     }
-                });
+                    if (onOpen) {
+                        onOpen(ui);
+                    }
+                    this.showActS2B(ui);
+                })
                 return null;
             }
         }

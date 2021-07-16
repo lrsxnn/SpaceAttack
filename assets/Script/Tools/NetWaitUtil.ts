@@ -20,7 +20,7 @@ class NetWaitUtil {
     }
 
     constructor() {
-        this._prefabPath = '';
+        this._prefabPath = 'Prefab/NetWait';
     }
 
     private getNode(): Node {

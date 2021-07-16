@@ -5,7 +5,7 @@ import { SpaceAttack } from '../Tools/Tools';
 import { NotificationMessage } from '../Notification/NotificationMessage';
 const { ccclass, property } = _decorator;
 
-@ccclass('Jo')
+@ccclass('Joystick')
 export class Joystick extends Component {
     @property(Node)
     midNode: Node = null!;
