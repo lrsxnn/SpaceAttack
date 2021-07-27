@@ -1,0 +1,81 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert
+      frag: fs:frag
+      blendState:
+        targets:
+        - blend: true
+      rasterizerState:
+        cullMode: none
+}%
+
+CCProgram vs %{
+  precision highp float;
+  #include <cc-global>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 v_color;
+  out vec2 v_uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    pos = cc_matView * pos;
+    pos.xyz = floor(pos.xyz);
+    pos = cc_matProj * pos;
+
+    v_uv0 = a_texCoord;
+
+    v_color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram fs %{
+  precision highp float;
+
+  #include <cc-global>
+  in vec4 v_color;
+
+  in vec2 v_uv0;
+
+  vec3 Orb(in vec2 uv, in vec3 color, in float radius, in float offset){
+    vec2 position = vec2(sin(offset * (cc_time.x + 30.)), cos(offset * (cc_time.x + 30.)));
+    position *= sin((cc_time.x) - offset) * cos(offset);
+    radius = radius * offset;
+    //通过计算UV坐标和上面的Position间的距离来绘制圆形,被除数radius的作用是控制圆形的大小
+    float dist = radius / distance(uv, position);
+    return color * pow(dist, 1.0 / 0.5);
+  }
+
+  vec4 frag(){
+    vec4 o = vec4(0, 0, 0, 0);
+    float ratio = cc_screenSize.x / cc_screenSize.y;
+    vec2 uv = (v_uv0 - 0.5) * 2.0;
+    uv.x *= ratio;
+    
+    vec3 pixel = vec3(0, 0, 0);
+    vec3 color = vec3(0, 0, 0);
+    //随时间而变化的颜色
+    color.r = (sin(cc_time.x * 0.55) + 1.5) * 0.4;
+    color.g = (sin(cc_time.x * 0.34) + 2.0) * 0.4;
+    color.b = (sin(cc_time.x * 0.31) + 4.5) * 0.3;
+
+    for(float i = 0.0; i < 200.; i++){
+      pixel += Orb(uv, color, 0.015, i / 200.);
+    }
+
+    o = mix(vec4(uv, 0.8+0.5*sin(cc_time.x), 1.), vec4(pixel, 1.), vec4(0.8));
+    // o = vec4(pixel, 1.);
+    o *= v_color;
+
+    return o;
+  }
+}%

@@ -1,0 +1,25 @@
+{
+  "ver": "1.4.6",
+  "importer": "effect",
+  "imported": true,
+  "uuid": "2ddcd37c-4eff-4c60-893d-6dd3f9ee85ca",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {},
+  "userData": {
+    "combinations": [
+      {
+        "USE_TEXTURE": [
+          true
+        ],
+        "USE_ALPHA_TEST": [
+          true
+        ],
+        "USE_PIXEL_ALIGNMENT": [
+          true
+        ]
+      }
+    ]
+  }
+}
