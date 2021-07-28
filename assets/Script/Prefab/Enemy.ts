@@ -51,12 +51,6 @@ export class Enemy extends Component {
             this.fixedUpdate();
         }
         this._lastTime = this._lastTime % this._fixedTimeStep;
-
-        this._changePosTime += dt;
-        if (this._changePosTime > 2) {
-            this._changePosTime -= 2;
-            this._changePos = true;
-        }
     }
 
     fixedUpdate() {
@@ -87,6 +81,12 @@ export class Enemy extends Component {
         // } else {
         //     this._axisHorizontal = 0;
         // }
+
+        this._changePosTime += this._fixedTimeStep;
+        if (this._changePosTime > 2) {
+            this._changePosTime -= 2;
+            this._changePos = true;
+        }
 
         if (this._changePos) {
             this._axisHorizontal = SpaceAttack.Utils.getRandomIntInclusive(-1, 1);

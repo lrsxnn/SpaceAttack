@@ -59,11 +59,13 @@ export class Spacecraft extends Component {
             this.fixedUpdate();
         }
         this._lastTime = this._lastTime % this._fixedTimeStep;
+    }
 
+    fixedUpdate() {
         if (this._spaceDown) {
-            this._fireStraightLineTime += dt;
-            this._fireTrackingTime += dt;
-            this._fireLaserTime += dt;
+            this._fireStraightLineTime += this._fixedTimeStep;
+            this._fireTrackingTime += this._fixedTimeStep;
+            this._fireLaserTime += this._fixedTimeStep;
             if (this._fireStraightLineTime > this._fireStraightLineTimeStep) {
                 this._fireStraightLineTime -= this._fireStraightLineTimeStep;
                 NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_STRAIGHTLINE, this.node.position.clone());
@@ -77,9 +79,7 @@ export class Spacecraft extends Component {
                 NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_LASER, this.node);
             }
         }
-    }
 
-    fixedUpdate() {
         if (this._sDown) {
             this._keyboardDirection.y -= 0.05;
             if (this._keyboardDirection.y <= -1) {

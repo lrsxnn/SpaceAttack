@@ -1,8 +1,9 @@
+import { BulletMoveController } from './BulletMoveController/BulletMoveController';
 import { BulletData } from './../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 
 import { _decorator, Component, Vec3, NodePool, Quat, Vec2, Collider, error, math } from 'cc';
-const { ccclass } = _decorator;
+const { ccclass, property } = _decorator;
 
 @ccclass('Bullet')
 export class Bullet extends Component {
@@ -10,6 +11,10 @@ export class Bullet extends Component {
     private _lastTime: number = 0;
 
     private _data: BulletData = null!;
+    public get data(): BulletData {
+        return this._data;
+    }
+
     private _bulletPool: NodePool = null!;
 
     private _damage: number = 1;
@@ -17,8 +22,8 @@ export class Bullet extends Component {
         return this._damage;
     }
 
-    private _newDirection: Vec2 = new Vec2();
-    private _desiredVelocity: Vec3 = new Vec3();
+    private _controller: BulletMoveController | null = null;
+    private _collider: Collider | null = null;
 
     update(dt: number) {
         this._lastTime += dt;
@@ -27,31 +32,19 @@ export class Bullet extends Component {
             this.fixedUpdate();
         }
         this._lastTime = this._lastTime % this._fixedTimeStep;
+    }
 
+    fixedUpdate() {
         if (this._data.delayTime > 0) {
-            this._data.delayTime -= dt;
+            this._data.delayTime -= this._fixedTimeStep;
         } else {
-            this.runLifeTime(dt);
-            this.lookAtTarget();
+            this.runLifeTime(this._fixedTimeStep);
         }
-
-        this._data.position = this.node.position.clone();
 
         if (this.checkIsOut()) {
             this.bulletDead();
             return;
         }
-
-        if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
-            Vec3.add(this._data.position, this._data.followNode.position.clone(), this._data.followPosition);
-        } else {
-            this.moveFoward(dt);
-        }
-        this.node.setPosition(this._data.position);
-    }
-
-    fixedUpdate() {
-
     }
 
     onTriggerEnter() {
@@ -69,28 +62,31 @@ export class Bullet extends Component {
     }
 
     private bulletDead() {
-        let collider = this.node.getComponent(Collider);
-        if (collider) {
-            collider.off('onTriggerEnter', this.onTriggerEnter, this);
-            collider.destroy();
+        if (this._collider !== null) {
+            this._collider.off('onTriggerEnter', this.onTriggerEnter, this);
+            this._collider.destroy();
+        }
+        if (this._controller !== null) {
+            this._controller.destroy();
         }
         this._bulletPool.put(this.node);
     }
 
-    public init(data: BulletData) {
+    public init(data: BulletData, collider: Collider | null, controller: BulletMoveController | null) {
         this._data = data;
         this._damage = this._data.damage;
 
-        this.node.setScale(new Vec3(this._data.scaleX, this._data.scaleY, 1));
+        this._collider = collider;
+        this._controller = controller;
 
-        if (this._data.followNode != null && this._data.followPosition != null) {//跟随目标
-            Vec3.add(this._data.position, this._data.followNode.position.clone(), this._data.followPosition);
+        if (this._collider !== null) {
+            this._collider.isTrigger = true;
+            this._collider.on('onTriggerEnter', this.onTriggerEnter, this);
         }
 
-        this.node.setPosition(this._data.position);
-        this.node.setRotation(this._data.rotation);
-
-        this.node.getComponent(Collider)!.on('onTriggerEnter', this.onTriggerEnter, this);
+        if (this._controller !== null) {
+            this._controller.init();
+        }
     }
 
     public setPool(bulletPool: NodePool) {
@@ -102,39 +98,10 @@ export class Bullet extends Component {
      */
     protected checkIsOut(): boolean {
         if (this._data.boundaryCheck) {
-            return this._data.position.x < SpaceAttack.allowedArea.xMin - this._data.radius || this._data.position.x > SpaceAttack.allowedArea.xMax + this._data.radius || this._data.position.y < SpaceAttack.allowedArea.yMin - this._data.radius || this._data.position.y > SpaceAttack.allowedArea.yMax + this._data.radius;
+            return this.node.position.x < SpaceAttack.allowedArea.xMin - this._data.radius || this.node.position.x > SpaceAttack.allowedArea.xMax + this._data.radius || this.node.position.y < SpaceAttack.allowedArea.yMin - this._data.radius || this.node.position.y > SpaceAttack.allowedArea.yMax + this._data.radius;
         } else {
             return false;
         }
-    }
-
-    /**
-     * 根据目标位置调整旋转角度以及前进方向
-     */
-    protected lookAtTarget() {
-        if (this._data.targetNode !== null && this._data.targetNode.isValid) {
-            this._newDirection.set(this._data.targetNode.position.x - this.node.position.x, this._data.targetNode.position.y - this.node.position.y);
-
-            let angle = math.toDegree(this._newDirection.signAngle(Vec2.UNIT_Y));
-            Quat.fromAngleZ(this._data.rotation, -angle);
-            this.node.setRotation(this._data.rotation);
-
-            this._newDirection = SpaceAttack.UnityVec2.clampMagnitude(this._newDirection, 1);
-            this._data.changeVelocity(new Vec3(this._newDirection.x, this._newDirection.y, 0));
-        }
-    }
-
-    /**
-     * 前进
-     */
-    protected moveFoward(dt: number) {
-        Vec3.multiplyScalar(this._desiredVelocity, this._data.inputDirection, this._data.speed);
-        let maxSpeedChange = this._data.acceleration * dt;
-        this._data.velocity.x = SpaceAttack.UnityMathf.moveTowards(this._data.velocity.x, this._desiredVelocity.x, maxSpeedChange);
-        this._data.velocity.y = SpaceAttack.UnityMathf.moveTowards(this._data.velocity.y, this._desiredVelocity.y, maxSpeedChange);
-
-        Vec3.multiplyScalar(this._desiredVelocity, this._data.velocity, dt);
-        this._data.position.add(this._desiredVelocity);
     }
 
     /**

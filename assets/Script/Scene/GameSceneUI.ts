@@ -262,7 +262,7 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
         this.loginPanel.active = false;
         this.roomPanel.active = false;
         this.gamePanel.active = true;
-        this.startButton.active = false;
+        this.startButton.active = true;
     }
 
     private showRoomList() {
