@@ -1,7 +1,8 @@
 import { ResLoader, ResLoadCell } from './../Tools/ResLoader';
 
-import { _decorator, Component, Node, Prefab, ProgressBar, Label, resources, error } from 'cc';
+import { _decorator, Component, Prefab, ProgressBar, Label } from 'cc';
 import SceneManagerUtil from '../Tools/SceneManagerUtil';
+import { SpaceAttack } from '../Tools/Tools';
 const { ccclass, property } = _decorator;
 
 @ccclass('PreLoadingScene')
@@ -14,6 +15,7 @@ export class PreLoadingScene extends Component {
     onLoad() {
         this.progress.progress = 0.01;
         this.label.string = "0%";
+        SpaceAttack.ConstValue.pause = true;
     }
 
     start() {

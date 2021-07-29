@@ -10,8 +10,9 @@
   "_techIdx": 0,
   "_defines": [
     {
-      "USE_ALPHA_TEST": true,
-      "USE_TEXTURE": true
+      "USE_VERTEX_COLOR": true,
+      "USE_TEXTURE": true,
+      "USE_ALPHA_TEST": true
     }
   ],
   "_states": [
@@ -26,11 +27,6 @@
     }
   ],
   "_props": [
-    {
-      "mainTexture": {
-        "__uuid__": "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@6c48a",
-        "__expectedType__": "cc.Texture2D"
-      }
-    }
+    {}
   ]
 }

@@ -1,0 +1,88 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: vs:vert # builtin header
+      frag: unlit-fs:frag
+      properties:
+        mainTexture:    { value: white }
+        xBlockCount: {value: 10}
+        yBlockCount: {value: 10}
+
+}%
+
+CCProgram vs %{
+  precision highp float;
+  #include <cc-global>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 v_color;
+  out vec2 v_uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    pos = cc_matView * pos;
+    pos.xyz = floor(pos.xyz);
+    pos = cc_matProj * pos;
+
+    v_uv0 = a_texCoord;
+
+    v_color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <output>
+
+  in vec2 v_uv0;
+  in vec4 v_color;
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    float xBlockCount;
+    float yBlockCount;
+  };
+
+  vec2 getUvMapPos(){
+    float xCount;
+    if(xBlockCount <= 0.0){
+      xCount = 1.0;
+    }else{
+      xCount = xBlockCount;
+    }
+    float blockWidth = 1.0 / xCount;
+
+    float yCount;
+    if(yBlockCount <= 0.0){
+      yCount = 1.0;
+    }else{
+      yCount = yBlockCount;
+    }
+    float blockHeight = 1.0 / yCount;
+
+    float blockXIndex = floor(v_uv0.x / blockWidth);
+    float blockYIndex = floor(v_uv0.y / blockHeight);
+
+    return vec2(blockWidth * (blockXIndex + 0.5), blockHeight * (blockYIndex + 0.5));
+  }
+
+  vec4 frag () {
+    vec4 col = vec4(1, 1, 1, 1);
+    vec2 realPos = v_uv0;
+    realPos = getUvMapPos();
+
+    col *= texture(mainTexture, realPos);
+    col *= v_color;
+
+    return CCFragOutput(col);
+  }
+}%

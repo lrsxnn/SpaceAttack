@@ -1,15 +1,15 @@
-import { Joystick } from './Joystick';
+import { BaseComponent } from './../Component/BaseComponent';
 import { Enemy } from './Enemy';
 import { Bullet } from './Bullet';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import { SpaceAttack } from '../Tools/Tools';
 
-import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard, Vec2, Vec3, macro, ConeCollider, ITriggerEvent } from 'cc';
+import { _decorator, systemEvent, SystemEventType, EventKeyboard, Vec2, Vec3, macro, ConeCollider, ITriggerEvent } from 'cc';
 import { NotificationMessage } from '../Notification/NotificationMessage';
 const { ccclass, property } = _decorator;
 
 @ccclass('Spacecraft')
-export class Spacecraft extends Component {
+export class Spacecraft extends BaseComponent {
     @property
     speed = 0.05;
     @property
@@ -27,9 +27,6 @@ export class Spacecraft extends Component {
     private _desiredVelocity: Vec3 = new Vec3();
     private _lastPos: Vec3 = new Vec3();
 
-    private _fixedTimeStep: number = 0.02;
-    private _lastTime: number = 0;
-
     private _fireStraightLineTimeStep: number = 0.05;
     private _fireStraightLineTime: number = this._fireStraightLineTimeStep;
     private _fireTrackingTimeStep: number = 0.1;
@@ -37,33 +34,20 @@ export class Spacecraft extends Component {
     private _fireLaserTimeStep: number = 2;
     private _fireLaserTime: number = this._fireLaserTimeStep;
     onLoad() {
-        this.node.getComponent(ConeCollider)!.on('onTriggerEnter', this.onTriggerStay, this);
-        this.node.getComponent(ConeCollider)!.on('onTriggerStay', this.onTriggerStay, this);
-
         NotificationCenter.addObserver(this, this.onSetPlayerControll, NotificationMessage.SET_PLAYER_CONTROLL);
         NotificationCenter.addObserver(this, this.onJoysticMove, NotificationMessage.JOYSTICK_MOVE);
     }
 
     onDestroy() {
-        this.node.getComponent(ConeCollider)!.off('onTriggerEnter', this.onTriggerStay, this);
-        this.node.getComponent(ConeCollider)!.off('onTriggerStay', this.onTriggerStay, this);
-
         NotificationCenter.removeObserver(this, NotificationMessage.SET_PLAYER_CONTROLL);
         NotificationCenter.removeObserver(this, NotificationMessage.JOYSTICK_MOVE);
     }
 
-    update(dt: number) {
-        this._lastTime += dt;
-        let fixedTime = this._lastTime / this._fixedTimeStep;
-        for (let i = 0; i < fixedTime; i++) {
-            this.fixedUpdate();
-        }
-        this._lastTime = this._lastTime % this._fixedTimeStep;
-
+    onFixedUpdate() {
         if (this._spaceDown) {
-            this._fireStraightLineTime += dt;
-            this._fireTrackingTime += dt;
-            this._fireLaserTime += dt;
+            this._fireStraightLineTime += this._fixedTimeStep;
+            this._fireTrackingTime += this._fixedTimeStep;
+            this._fireLaserTime += this._fixedTimeStep;
             if (this._fireStraightLineTime > this._fireStraightLineTimeStep) {
                 this._fireStraightLineTime -= this._fireStraightLineTimeStep;
                 NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_STRAIGHTLINE, this.node.position.clone());
@@ -77,9 +61,7 @@ export class Spacecraft extends Component {
                 NotificationCenter.sendNotification(NotificationMessage.SPACECRAFT_FIRE_LASER, this.node);
             }
         }
-    }
 
-    fixedUpdate() {
         if (this._sDown) {
             this._keyboardDirection.y -= 0.05;
             if (this._keyboardDirection.y <= -1) {
@@ -121,17 +103,27 @@ export class Spacecraft extends Component {
         this._lastPos = this.node.position.clone();
         this._lastPos.add(this._desiredVelocity);
 
-        if (this._lastPos.x < SpaceAttack.allowedArea.xMin) {
-            this._lastPos.x = SpaceAttack.allowedArea.xMin;
-        } else if (this._lastPos.x > SpaceAttack.allowedArea.xMax) {
-            this._lastPos.x = SpaceAttack.allowedArea.xMax;
+        if (this._lastPos.x < SpaceAttack.ConstValue.allowedArea.xMin) {
+            this._lastPos.x = SpaceAttack.ConstValue.allowedArea.xMin;
+        } else if (this._lastPos.x > SpaceAttack.ConstValue.allowedArea.xMax) {
+            this._lastPos.x = SpaceAttack.ConstValue.allowedArea.xMax;
         }
-        if (this._lastPos.y < SpaceAttack.allowedArea.yMin) {
-            this._lastPos.y = SpaceAttack.allowedArea.yMin;
-        } else if (this._lastPos.y > SpaceAttack.allowedArea.yMax) {
-            this._lastPos.y = SpaceAttack.allowedArea.yMax;
+        if (this._lastPos.y < SpaceAttack.ConstValue.allowedArea.yMin) {
+            this._lastPos.y = SpaceAttack.ConstValue.allowedArea.yMin;
+        } else if (this._lastPos.y > SpaceAttack.ConstValue.allowedArea.yMax) {
+            this._lastPos.y = SpaceAttack.ConstValue.allowedArea.yMax;
         }
         this.node.setPosition(this._lastPos);
+    }
+
+    onPauseEnter() {
+        this.node.getComponent(ConeCollider)!.off('onTriggerEnter', this.onTriggerStay, this);
+        this.node.getComponent(ConeCollider)!.off('onTriggerStay', this.onTriggerStay, this);
+    }
+
+    onPauseExit() {
+        this.node.getComponent(ConeCollider)!.on('onTriggerEnter', this.onTriggerStay, this);
+        this.node.getComponent(ConeCollider)!.on('onTriggerStay', this.onTriggerStay, this);
     }
 
     onJoysticMove(direction: Vec3) {

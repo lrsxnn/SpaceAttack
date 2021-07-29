@@ -1,10 +1,4 @@
-
-import { NotificationCenter } from './../Notification/NotificationCenter';
-import { Enemy } from './../Prefab/Enemy';
-import { Spacecraft } from './../Prefab/Spacecraft';
-import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard, error, Vec3, Label, game, director, log } from 'cc';
-import { NotificationMessage } from '../Notification/NotificationMessage';
-import { SpaceAttack } from '../Tools/Tools';
+import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard} from 'cc';
 const { ccclass, property } = _decorator;
 
 

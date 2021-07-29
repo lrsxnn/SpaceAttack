@@ -1,14 +1,16 @@
-import { Node, Vec3, Quat, sp } from 'cc';
+import { Node, Vec3, Quat } from 'cc';
 import { EventDispatcher } from './../Notification/EventDispatcher';
 
 export const BulletEd = new EventDispatcher();
 export class BulletData {
+    /** @param 移动方式 */
+    public moveType: BULLET_MOVE_TYPE;
+    /** @param 碰撞类型 */
+    public colliderType: BULLET_COLLIDER_TYPE;
     /** @param 坐标 */
     public position: Vec3 = new Vec3();
-    /** @param 旋转角度 */
-    public rotation: Quat = new Quat();
-    /** @param 速度 */
-    public velocity: Vec3 = new Vec3();
+    /** @param 角度 */
+    public angle: number = 0;
     /** @param 移动方向 */
     public inputDirection: Vec3 = new Vec3();
     /** @param 移动快慢 */
@@ -22,8 +24,12 @@ export class BulletData {
     /** @param 高度 */
     public height: number = 1;
 
-    public scaleX: number = 1;
-    public scaleY: number = 1;
+    /** @param 旋转角度 */
+    public rotation: Quat = new Quat();
+    /** @param 速度 */
+    public velocity: Vec3 = new Vec3();
+    /** @param 缩放 */
+    public scale: Vec3 = new Vec3();
 
     /** @param 延迟变化时间 */
     public delayTime: number = 0;
@@ -38,24 +44,43 @@ export class BulletData {
     /** @param 跟随距离 */
     public followPosition: Vec3 | null = null;
 
-    /**
-     * @param position 坐标
-     * @param rotation 旋转角度
-     * @param inputDirection 移动方向
-     * @param speed 移动快慢
-     * @param damage 伤害
-     * @param acceleration 加速度
-     */
-    constructor(position: Vec3, rotation: number = 0, inputDirection: Vec3 = Vec3.UP.clone(), speed: number = 10, damage: number = 1, acceleration: number = 0) {
-        this.position = position;
-        Quat.fromAngleZ(this.rotation, -rotation);
-        this.inputDirection = inputDirection;
-        this.speed = speed;
-        this.damage = damage;
-        this.acceleration = acceleration;
+    constructor(data: BulletBaseDataParam) {
+        this.moveType = data.moveType;
+        this.colliderType = data.colliderType;
+        this.position = data.position;
+        this.angle = -data.angle;
+        this.inputDirection = data.inputDirection;
+        this.damage = typeof data.radius === 'number' ? data.radius : 1;
+
+        this.radius = typeof data.radius === 'number' ? data.radius : 0.5;
+        this.height = typeof data.height === 'number' ? data.height : 1;
+
+        this.speed = typeof data.speed === 'number' ? data.speed : 0;
+        this.acceleration = typeof data.acceleration === 'number' ? data.acceleration : 0;
+        this.lifeTime = typeof data.lifeTime === 'number' ? data.lifeTime : Infinity;
+
+        Quat.fromAngleZ(this.rotation, -data.angle);
         Vec3.multiplyScalar(this.velocity, this.inputDirection, this.speed);
+
+        switch (this.colliderType) {
+            case BULLET_COLLIDER_TYPE.SPHERE:
+                this.scale.x = this.radius * 2
+                this.scale.y = this.radius * 2;
+                break;
+            case BULLET_COLLIDER_TYPE.CONE:
+                this.scale.x = this.radius * 2;
+                this.scale.y = this.height;
+                break;
+            case BULLET_COLLIDER_TYPE.CYLINDER:
+                this.scale.x = this.radius * 2;
+                this.scale.y = this.height;
+                break;
+        }
     }
 
+    /**
+     * 变换速度
+     */
     public changeVelocity(direction?: Vec3, speed?: number, velocity?: Vec3) {
         if (velocity) {
             this.velocity = velocity;
@@ -69,5 +94,72 @@ export class BulletData {
             Vec3.multiplyScalar(this.velocity, this.inputDirection, this.speed);
         }
     }
+
+    /**
+     * 设置追踪属性
+     */
+    public setTrackingData(delayTime: number, targetNode: Node) {
+        this.delayTime = delayTime;
+        this.targetNode = targetNode;
+    }
+
+    /**
+     * 设置激光属性
+     */
+    public setLaserData(delayTime: number, followNode: Node, followPosition: Vec3, lifeTime?: number) {
+        this.delayTime = delayTime;
+        this.followNode = followNode;
+        this.followPosition = followPosition;
+        this.lifeTime = typeof lifeTime === 'number' ? lifeTime : this.lifeTime;
+
+        this.boundaryCheck = false;
+        Vec3.add(this.position, this.followNode!.position.clone(), this.followPosition!);
+    }
+
+    public setRotaryStarData() {
+        this.boundaryCheck = false;
+        this.scale.x = this.radius * this.angle / 360;
+        this.scale.y = this.radius * this.angle / 360;
+    }
 }
 
+export enum BULLET_MOVE_TYPE {
+    STRAIGHTLINE,
+    TRACKING,
+    LASER,
+    ROTARYSTAR,
+}
+
+export enum BULLET_COLLIDER_TYPE {
+    SPHERE,
+    CONE,
+    CYLINDER,
+}
+
+export interface BulletBaseDataParam {
+    /** @param 移动方式 */
+    moveType: BULLET_MOVE_TYPE;
+    /** @param 碰撞类型 */
+    colliderType: BULLET_COLLIDER_TYPE;
+    /** @param 坐标 */
+    position: Vec3;
+    /** @param 旋转角度 */
+    angle: number;
+    /** @param 移动方向 */
+    inputDirection: Vec3;
+
+    /** @param 伤害 */
+    damage?: number;
+
+    /**  @param 半径 */
+    radius?: number;
+    /** @param 高度 */
+    height?: number;
+
+    /** @param 移动快慢 */
+    speed?: number;
+    /**  @param 加速度 */
+    acceleration?: number;
+    /** @param 持续时间 */
+    lifeTime?: number;
+}
