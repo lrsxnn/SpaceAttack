@@ -174,10 +174,12 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
     onJoinRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.JoinRoomBst>) {
         log(`新玩家加入 ${event.data.joinPlayerId}`);
         log(`房间信息 ${this.logRoomInfo(event.data.roomInfo)}`);
+        log(`房间信息 ${this.logRoomInfo(this._room.roomInfo)}`);
     }
     onLeaveRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.LeaveRoomBst>) {
         log(`玩家退出 ${event.data.leavePlayerId}`);
         log(`房间信息 ${this.logRoomInfo(event.data.roomInfo)}`);
+        log(`房间信息 ${this.logRoomInfo(this._room.roomInfo)}`);
     }
     onDismissRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.DismissRoomBst>) {
         log(`房间被解散 ${event.data.roomInfo.id} ${event.data.roomInfo.name}`);
@@ -262,7 +264,7 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
         this.loginPanel.active = false;
         this.roomPanel.active = false;
         this.gamePanel.active = true;
-        this.startButton.active = true;
+        this.startButton.active = false;
     }
 
     private showRoomList() {

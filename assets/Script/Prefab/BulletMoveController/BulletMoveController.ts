@@ -32,13 +32,15 @@ export abstract class BulletMoveController extends Component {
 
         this.moveAction(this._fixedTimeStep);
 
+        this.node.setScale(this._bullet.data.scale);
+        this.node.setRotation(this._bullet.data.rotation);
         this.node.setPosition(this._bullet.data.position);
     }
 
     public init() {
         this._bullet = this.getComponent(Bullet)!;
 
-        this.node.setScale(new Vec3(this._bullet.data.scaleX, this._bullet.data.scaleY, 1));
+        this.node.setScale(this._bullet.data.scale);
         this.node.setPosition(this._bullet.data.position);
         this.node.setRotation(this._bullet.data.rotation);
     }

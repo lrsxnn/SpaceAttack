@@ -39,9 +39,10 @@ export class Enemy extends Component {
     }
 
     start() {
-        this.schedule(() => {
-            BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
-        }, 1);
+        // this.schedule(() => {
+        //     BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        // }, 1);
+        BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
     }
 
     update(dt: number) {

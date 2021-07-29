@@ -15,7 +15,6 @@ export class TrackingBulletMoveController extends BulletMoveController {
 
             let angle = math.toDegree(this._newDirection.signAngle(Vec2.UNIT_Y));
             Quat.fromAngleZ(this._bullet.data.rotation, -angle);
-            this.node.setRotation(this._bullet.data.rotation);
 
             this._newDirection = SpaceAttack.UnityVec2.clampMagnitude(this._newDirection, 1);
             this._bullet.data.changeVelocity(new Vec3(this._newDirection.x, this._newDirection.y, 0));

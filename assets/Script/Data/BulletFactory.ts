@@ -1,3 +1,4 @@
+import { RotaryStarBulletMoveController } from './../Prefab/BulletMoveController/RotaryStarBulletMoveController';
 import { LaserBulletMoveController } from './../Prefab/BulletMoveController/LaserBulletMoveController';
 import { TrackingBulletMoveController } from './../Prefab/BulletMoveController/TrackingBulletMoveController';
 import { StraightLineBulletMoveController } from './../Prefab/BulletMoveController/StraightLineBulletMoveController';
@@ -58,6 +59,9 @@ export class BulletFactory {
                 break;
             case BULLET_MOVE_TYPE.LASER:
                 controller = bullet.addComponent(LaserBulletMoveController);
+                break;
+            case BULLET_MOVE_TYPE.ROTARYSTAR:
+                controller = bullet.addComponent(RotaryStarBulletMoveController);
                 break;
         }
         return controller;

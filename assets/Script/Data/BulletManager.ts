@@ -35,19 +35,33 @@ export class BulletManager extends Component {
     private _spacecraftBulletPool: NodePool = new NodePool('Bullet');
 
     enemyFire(startPosition: Vec3) {
-        for (let i = 0; i < 8; i++) {
-            let input = new Vec2(Math.sin(i / 8 * 2 * Math.PI), Math.cos(i / 8 * 2 * Math.PI));
-            input = SpaceAttack.UnityVec2.clampMagnitude(input, 1);
+        // for (let i = 0; i < 8; i++) {
+        //     let input = new Vec2(Math.sin(i / 8 * 2 * Math.PI), Math.cos(i / 8 * 2 * Math.PI));
+        //     input = SpaceAttack.UnityVec2.clampMagnitude(input, 1);
 
+        //     let param: BulletBaseDataParam = {
+        //         moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
+        //         colliderType: BULLET_COLLIDER_TYPE.SPHERE,
+        //         position: startPosition,
+        //         angle: i / 8 * 360,
+        //         inputDirection: new Vec3(input.x, input.y, 0),
+        //         speed: SpaceAttack.baseSpeed,
+        //     };
+        //     let data = new BulletData(param);
+        //     this._bulletFactory.createBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
+        // }
+
+        for (let i = 0; i < 200; i++) {
             let param: BulletBaseDataParam = {
-                moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
+                moveType: BULLET_MOVE_TYPE.ROTARYSTAR,
                 colliderType: BULLET_COLLIDER_TYPE.SPHERE,
                 position: startPosition,
-                rotation: i / 8 * 360,
-                inputDirection: new Vec3(input.x, input.y, 0),
+                angle: i / 200 * 360,
+                inputDirection: Vec3.ZERO,
                 speed: SpaceAttack.baseSpeed,
             };
             let data = new BulletData(param);
+            data.setRotaryStarData();
             this._bulletFactory.createBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
         }
     }
@@ -60,7 +74,7 @@ export class BulletManager extends Component {
             moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
             colliderType: BULLET_COLLIDER_TYPE.SPHERE,
             position: _startPos,
-            rotation: 0,
+            angle: 0,
             inputDirection: Vec3.UP,
             speed: SpaceAttack.baseSpeed * 3,
         };
@@ -72,7 +86,7 @@ export class BulletManager extends Component {
             moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
             colliderType: BULLET_COLLIDER_TYPE.SPHERE,
             position: _startPos,
-            rotation: 0,
+            angle: 0,
             inputDirection: Vec3.UP,
             speed: SpaceAttack.baseSpeed * 3,
         };
@@ -92,7 +106,7 @@ export class BulletManager extends Component {
             moveType: BULLET_MOVE_TYPE.TRACKING,
             colliderType: BULLET_COLLIDER_TYPE.CONE,
             position: _startPos,
-            rotation: 45,
+            angle: 45,
             inputDirection: new Vec3(direction.x, direction.y, 0),
             speed: SpaceAttack.baseSpeed * 3,
         };
@@ -107,7 +121,7 @@ export class BulletManager extends Component {
             moveType: BULLET_MOVE_TYPE.TRACKING,
             colliderType: BULLET_COLLIDER_TYPE.CONE,
             position: _startPos,
-            rotation: 315,
+            angle: 315,
             inputDirection: new Vec3(direction.x, direction.y, 0),
             speed: SpaceAttack.baseSpeed * 3,
         };
@@ -123,7 +137,7 @@ export class BulletManager extends Component {
             moveType: BULLET_MOVE_TYPE.TRACKING,
             colliderType: BULLET_COLLIDER_TYPE.CONE,
             position: Vec3.ZERO,
-            rotation: 0,
+            angle: 0,
             inputDirection: Vec3.UP,
             radius: 0.25,
             height: height,
@@ -136,7 +150,7 @@ export class BulletManager extends Component {
             moveType: BULLET_MOVE_TYPE.TRACKING,
             colliderType: BULLET_COLLIDER_TYPE.CONE,
             position: Vec3.ZERO,
-            rotation: 0,
+            angle: 0,
             inputDirection: Vec3.UP,
             radius: 0.25,
             height: height,

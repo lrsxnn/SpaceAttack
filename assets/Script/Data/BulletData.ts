@@ -9,10 +9,8 @@ export class BulletData {
     public colliderType: BULLET_COLLIDER_TYPE;
     /** @param 坐标 */
     public position: Vec3 = new Vec3();
-    /** @param 旋转角度 */
-    public rotation: Quat = new Quat();
-    /** @param 速度 */
-    public velocity: Vec3 = new Vec3();
+    /** @param 角度 */
+    public angle: number = 0;
     /** @param 移动方向 */
     public inputDirection: Vec3 = new Vec3();
     /** @param 移动快慢 */
@@ -26,8 +24,12 @@ export class BulletData {
     /** @param 高度 */
     public height: number = 1;
 
-    public scaleX: number = 1;
-    public scaleY: number = 1;
+    /** @param 旋转角度 */
+    public rotation: Quat = new Quat();
+    /** @param 速度 */
+    public velocity: Vec3 = new Vec3();
+    /** @param 缩放 */
+    public scale: Vec3 = new Vec3();
 
     /** @param 延迟变化时间 */
     public delayTime: number = 0;
@@ -46,7 +48,7 @@ export class BulletData {
         this.moveType = data.moveType;
         this.colliderType = data.colliderType;
         this.position = data.position;
-        Quat.fromAngleZ(this.rotation, -data.rotation);
+        this.angle = -data.angle;
         this.inputDirection = data.inputDirection;
         this.damage = typeof data.radius === 'number' ? data.radius : 1;
 
@@ -57,20 +59,21 @@ export class BulletData {
         this.acceleration = typeof data.acceleration === 'number' ? data.acceleration : 0;
         this.lifeTime = typeof data.lifeTime === 'number' ? data.lifeTime : Infinity;
 
+        Quat.fromAngleZ(this.rotation, -data.angle);
         Vec3.multiplyScalar(this.velocity, this.inputDirection, this.speed);
 
         switch (this.colliderType) {
             case BULLET_COLLIDER_TYPE.SPHERE:
-                this.scaleX = this.radius * 2;
-                this.scaleY = this.radius * 2;
+                this.scale.x = this.radius * 2
+                this.scale.y = this.radius * 2;
                 break;
             case BULLET_COLLIDER_TYPE.CONE:
-                this.scaleX = this.radius * 2;
-                this.scaleY = this.height;
+                this.scale.x = this.radius * 2;
+                this.scale.y = this.height;
                 break;
             case BULLET_COLLIDER_TYPE.CYLINDER:
-                this.scaleX = this.radius * 2;
-                this.scaleY = this.height;
+                this.scale.x = this.radius * 2;
+                this.scale.y = this.height;
                 break;
         }
     }
@@ -112,12 +115,19 @@ export class BulletData {
         this.boundaryCheck = false;
         Vec3.add(this.position, this.followNode!.position.clone(), this.followPosition!);
     }
+
+    public setRotaryStarData() {
+        this.boundaryCheck = false;
+        this.scale.x = this.radius * this.angle / 360;
+        this.scale.y = this.radius * this.angle / 360;
+    }
 }
 
 export enum BULLET_MOVE_TYPE {
     STRAIGHTLINE,
     TRACKING,
     LASER,
+    ROTARYSTAR,
 }
 
 export enum BULLET_COLLIDER_TYPE {
@@ -134,7 +144,7 @@ export interface BulletBaseDataParam {
     /** @param 坐标 */
     position: Vec3;
     /** @param 旋转角度 */
-    rotation: number;
+    angle: number;
     /** @param 移动方向 */
     inputDirection: Vec3;
 
