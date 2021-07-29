@@ -1,15 +1,13 @@
-import { BulletMoveController } from './BulletMoveController/BulletMoveController';
+import { BaseComponent } from './../Component/BaseComponent';
 import { BulletData } from './../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 
-import { _decorator, Component, Vec3, NodePool, Quat, Vec2, Collider, error, math } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, NodePool, Collider } from 'cc';
+import { BulletMoveController } from '../Component/BulletMoveController/BulletMoveController';
+const { ccclass } = _decorator;
 
 @ccclass('Bullet')
-export class Bullet extends Component {
-    private _fixedTimeStep: number = 0.02;
-    private _lastTime: number = 0;
-
+export class Bullet extends BaseComponent {
     private _data: BulletData = null!;
     public get data(): BulletData {
         return this._data;
@@ -25,16 +23,11 @@ export class Bullet extends Component {
     private _controller: BulletMoveController | null = null;
     private _collider: Collider | null = null;
 
-    update(dt: number) {
-        this._lastTime += dt;
-        let fixedTime = this._lastTime / this._fixedTimeStep;
-        for (let i = 0; i < fixedTime; i++) {
-            this.fixedUpdate();
-        }
-        this._lastTime = this._lastTime % this._fixedTimeStep;
+    onUpdate(dt: number) {
+
     }
 
-    fixedUpdate() {
+    onFixedUpdate() {
         if (this._data.delayTime > 0) {
             this._data.delayTime -= this._fixedTimeStep;
         } else {
@@ -98,7 +91,7 @@ export class Bullet extends Component {
      */
     protected checkIsOut(): boolean {
         if (this._data.boundaryCheck) {
-            return this.node.position.x < SpaceAttack.allowedArea.xMin - this._data.radius || this.node.position.x > SpaceAttack.allowedArea.xMax + this._data.radius || this.node.position.y < SpaceAttack.allowedArea.yMin - this._data.radius || this.node.position.y > SpaceAttack.allowedArea.yMax + this._data.radius;
+            return this.node.position.x < SpaceAttack.ConstValue.allowedArea.xMin - this._data.radius || this.node.position.x > SpaceAttack.ConstValue.allowedArea.xMax + this._data.radius || this.node.position.y < SpaceAttack.ConstValue.allowedArea.yMin - this._data.radius || this.node.position.y > SpaceAttack.ConstValue.allowedArea.yMax + this._data.radius;
         } else {
             return false;
         }

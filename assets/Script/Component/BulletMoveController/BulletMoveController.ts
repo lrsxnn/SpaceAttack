@@ -1,27 +1,16 @@
-import { Bullet } from '../Bullet';
+import { BaseComponent } from './../BaseComponent';
+import { Bullet } from './../../Prefab/Bullet';
 
-import { _decorator, Component, Vec2, Vec3 } from 'cc';
+import { _decorator, Vec2, Vec3 } from 'cc';
 const { ccclass } = _decorator;
 
 @ccclass('BulletMoveController')
-export abstract class BulletMoveController extends Component {
-    private _fixedTimeStep: number = 0.02;
-    private _lastTime: number = 0;
-
+export abstract class BulletMoveController extends BaseComponent {
     protected _bullet: Bullet = null!;
     protected _newDirection: Vec2 = new Vec2();
     protected _desiredVelocity: Vec3 = new Vec3();
 
-    update(dt: number) {
-        this._lastTime += dt;
-        let fixedTime = this._lastTime / this._fixedTimeStep;
-        for (let i = 0; i < fixedTime; i++) {
-            this.fixedUpdate();
-        }
-        this._lastTime = this._lastTime % this._fixedTimeStep;
-    }
-
-    fixedUpdate() {
+    onFixedUpdate() {
         if (this._bullet.data.delayTime > 0) {
             this._bullet.data.delayTime -= this._fixedTimeStep;
         } else {

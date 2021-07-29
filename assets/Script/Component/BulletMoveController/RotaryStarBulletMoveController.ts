@@ -1,6 +1,5 @@
 
 import { _decorator, Vec3 } from 'cc';
-import { SpaceAttack } from '../../Tools/Tools';
 import { BulletMoveController } from './BulletMoveController';
 const { ccclass } = _decorator;
 

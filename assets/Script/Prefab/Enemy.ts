@@ -1,13 +1,15 @@
+import { NotificationCenter } from './../Notification/NotificationCenter';
+import { BaseComponent } from './../Component/BaseComponent';
 import { Bullet } from './Bullet';
 import { NotificationMessage } from './../Notification/NotificationMessage';
 
-import { _decorator, Component, Node, Vec2, Vec3, error, BoxCollider, ITriggerEvent } from 'cc';
+import { _decorator, Vec2, Vec3, BoxCollider, ITriggerEvent } from 'cc';
 import { BulletEd } from '../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 const { ccclass, property } = _decorator;
 
 @ccclass('Enemy')
-export class Enemy extends Component {
+export class Enemy extends BaseComponent {
     @property
     speed = 0.02;
     @property
@@ -22,18 +24,15 @@ export class Enemy extends Component {
     private _desiredVelocity: Vec3 = new Vec3();
     private _lastPos: Vec3 = new Vec3();
 
-    private _fixedTimeStep: number = 0.02;
-    private _lastTime: number = 0;
-
     private _changePos = true;
     private _changePosTime = 0;
 
-    onLoad() {
+    onPauseExit() {
         this.node.getComponent(BoxCollider)!.on('onTriggerEnter', this.onTriggerStay, this);
         this.node.getComponent(BoxCollider)!.on('onTriggerStay', this.onTriggerStay, this);
     }
 
-    onDestroy() {
+    onPauseEnter() {
         this.node.getComponent(BoxCollider)!.off('onTriggerEnter', this.onTriggerStay, this);
         this.node.getComponent(BoxCollider)!.off('onTriggerStay', this.onTriggerStay, this);
     }
@@ -42,19 +41,11 @@ export class Enemy extends Component {
         // this.schedule(() => {
         //     BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
         // }, 1);
-        BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        // BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
     }
 
-    update(dt: number) {
-        this._lastTime += dt;
-        let fixedTime = this._lastTime / this._fixedTimeStep;
-        for (let i = 0; i < fixedTime; i++) {
-            this.fixedUpdate();
-        }
-        this._lastTime = this._lastTime % this._fixedTimeStep;
-    }
-
-    fixedUpdate() {
+    onFixedUpdate() {
         // if (this._sDown) {
         //     this._axisVertical -= 0.05;
         //     if (this._axisVertical <= -1) {
@@ -104,15 +95,15 @@ export class Enemy extends Component {
         this._lastPos = this.node.position.clone();
         this._lastPos.add(this._desiredVelocity);
 
-        if (this._lastPos.x < SpaceAttack.allowedArea.xMin) {
-            this._lastPos.x = SpaceAttack.allowedArea.xMin;
-        } else if (this._lastPos.x > SpaceAttack.allowedArea.xMax) {
-            this._lastPos.x = SpaceAttack.allowedArea.xMax;
+        if (this._lastPos.x < SpaceAttack.ConstValue.allowedArea.xMin) {
+            this._lastPos.x = SpaceAttack.ConstValue.allowedArea.xMin;
+        } else if (this._lastPos.x > SpaceAttack.ConstValue.allowedArea.xMax) {
+            this._lastPos.x = SpaceAttack.ConstValue.allowedArea.xMax;
         }
-        if (this._lastPos.y < SpaceAttack.allowedArea.yMin) {
-            this._lastPos.y = SpaceAttack.allowedArea.yMin;
-        } else if (this._lastPos.y > SpaceAttack.allowedArea.yMax) {
-            this._lastPos.y = SpaceAttack.allowedArea.yMax;
+        if (this._lastPos.y < SpaceAttack.ConstValue.allowedArea.yMin) {
+            this._lastPos.y = SpaceAttack.ConstValue.allowedArea.yMin;
+        } else if (this._lastPos.y > SpaceAttack.ConstValue.allowedArea.yMax) {
+            this._lastPos.y = SpaceAttack.ConstValue.allowedArea.yMax;
         }
         this.node.setPosition(this._lastPos);
     }

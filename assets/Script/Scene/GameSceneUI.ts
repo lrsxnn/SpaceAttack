@@ -5,7 +5,7 @@ import { NotificationMessage } from './../Notification/NotificationMessage';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import adapter from '../Plugin/cloudbaseAdapter';
 import cloudbase from '../Plugin/cloudbase.js'
-import { _decorator, Component, Node, log, error, director, Label, EditBox, instantiate, Button, EventHandler, find } from 'cc';
+import { _decorator, Component, Node, log, error, Label, EditBox, instantiate, Button, EventHandler, find } from 'cc';
 import { SpaceAttack } from '../Tools/Tools';
 import NetWaitUtil from '../Tools/NetWaitUtil';
 import PromptBoxUtil from '../Tools/PromptBoxUtil';
@@ -65,10 +65,6 @@ export class GameSceneUI extends Component {
         if (this._listenerInited) {
             Listener.clear();
         }
-    }
-
-    start() {
-        director.pause();
     }
 
     update(dt: number) {
@@ -157,17 +153,20 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
     }
 
     onClickPause() {
-        director.pause();
+        SpaceAttack.ConstValue.pause = true;
+        // director.pause();
         // game.pause();
     }
 
     onClickResume() {
-        director.resume();
+        SpaceAttack.ConstValue.pause = false;
+        // director.resume();
         // game.resume();
     }
 
     onClickStart() {
-        director.resume();
+        SpaceAttack.ConstValue.pause = false;
+        // director.resume();
         NotificationCenter.sendNotification(NotificationMessage.SET_PLAYER_CONTROLL, true);
     }
 
@@ -192,7 +191,7 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
                 name: 'sign',
                 data: {
                     openId: uid,
-                    gameId: SpaceAttack.mgobe_gameId
+                    gameId: SpaceAttack.ConstValue.mgobe_gameId
                 }
             }).then((res) => {
                 NetWaitUtil.close();
@@ -202,14 +201,14 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
                 } else {
                     let mgobe_gameInfo: MGOBE.types.GameInfoPara = {
                         openId: uid,
-                        gameId: SpaceAttack.mgobe_gameId,
+                        gameId: SpaceAttack.ConstValue.mgobe_gameId,
                         createSignature: callback => {
                             return callback({ sign, nonce, timestamp });
                         },
                     }
 
                     NetWaitUtil.show('初始化......');
-                    Listener.init(mgobe_gameInfo, SpaceAttack.mgobe_config, event => {
+                    Listener.init(mgobe_gameInfo, SpaceAttack.ConstValue.mgobe_config, event => {
                         NetWaitUtil.close();
                         if (event.code === MGOBE.ErrCode.EC_OK) {
                             log('Listener 初始化成功');
@@ -277,7 +276,7 @@ Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
             NetWaitUtil.netWaitEnd('getRoomList');
             if (event.code === 0) {
                 let data = event.data;
-                if (data?.gameId === SpaceAttack.mgobe_gameId) {
+                if (data?.gameId === SpaceAttack.ConstValue.mgobe_gameId) {
                     let children = this.roomListContent.children;
                     children.forEach(child => {
                         child.destroy();

@@ -1,3 +1,4 @@
+import { NotificationCenter } from './../Notification/NotificationCenter';
 
 import { Vec2, _decorator, Rect, Vec3, error, sys, Node, UITransform, log, Size } from 'cc';
 
@@ -180,16 +181,28 @@ export namespace SpaceAttack {
         }
     }
 
-    export const allowedArea = new Rect(-9.5, -14, 19, 28);
-    export const baseSpeed = 10;
+    export class ConstValue {
+        public static readonly allowedArea = new Rect(-9.5, -14, 19, 28);
+        public static readonly baseSpeed = 10;
+        public static readonly mgobe_gameId: string = 'obg-7pl76q6r';
+        public static readonly mgobe_config: MGOBE.types.ConfigPara = {
+            url: '7pl76q6r.wxlagame.com',
+            reconnectMaxTimes: 5,
+            reconnectInterval: 1000,
+            resendInterval: 1000,
+            resendTimeout: 10000,
+        };
 
-    export const mgobe_gameId: string = 'obg-7pl76q6r'
-    export const mgobe_config: MGOBE.types.ConfigPara = {
-        url: '7pl76q6r.wxlagame.com',
-        reconnectMaxTimes: 5,
-        reconnectInterval: 1000,
-        resendInterval: 1000,
-        resendTimeout: 10000,
+        private static _pause: boolean = false;
+        public static get pause() {
+            return this._pause;
+        }
+        public static set pause(value) {
+            this._pause = value;
+            if (!value) {
+                NotificationCenter.cleanPauseList();
+            }
+        }
     }
 
     export class SysTools {

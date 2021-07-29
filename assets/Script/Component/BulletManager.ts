@@ -1,12 +1,11 @@
+import { BulletBaseDataParam, BULLET_MOVE_TYPE, BULLET_COLLIDER_TYPE, BulletData } from './../Data/BulletData';
+import { BulletFactory } from './../Data/BulletFactory';
 import { GameScene } from './../Scene/GameScene';
-import { BulletFactory } from './BulletFactory';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import { NotificationMessage } from './../Notification/NotificationMessage';
-import { Bullet } from './../Prefab/Bullet';
-import { BulletEd, BulletData, BulletBaseDataParam, BULLET_MOVE_TYPE, BULLET_COLLIDER_TYPE } from './BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 
-import { _decorator, Component, Node, NodePool, instantiate, Vec2, Vec3, Prefab, SphereCollider, Mesh, MeshRenderer } from 'cc';
+import { _decorator, Component, Node, NodePool, Vec2, Vec3, Prefab, Mesh } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletManager')
@@ -58,7 +57,7 @@ export class BulletManager extends Component {
                 position: startPosition,
                 angle: i / 200 * 360,
                 inputDirection: Vec3.ZERO,
-                speed: SpaceAttack.baseSpeed,
+                speed: SpaceAttack.ConstValue.baseSpeed,
             };
             let data = new BulletData(param);
             data.setRotaryStarData();
@@ -76,7 +75,7 @@ export class BulletManager extends Component {
             position: _startPos,
             angle: 0,
             inputDirection: Vec3.UP,
-            speed: SpaceAttack.baseSpeed * 3,
+            speed: SpaceAttack.ConstValue.baseSpeed * 3,
         };
         let data = new BulletData(param);
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
@@ -88,7 +87,7 @@ export class BulletManager extends Component {
             position: _startPos,
             angle: 0,
             inputDirection: Vec3.UP,
-            speed: SpaceAttack.baseSpeed * 3,
+            speed: SpaceAttack.ConstValue.baseSpeed * 3,
         };
         data = new BulletData(param);
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
@@ -108,7 +107,7 @@ export class BulletManager extends Component {
             position: _startPos,
             angle: 45,
             inputDirection: new Vec3(direction.x, direction.y, 0),
-            speed: SpaceAttack.baseSpeed * 3,
+            speed: SpaceAttack.ConstValue.baseSpeed * 3,
         };
         let data = new BulletData(param);
         data.setTrackingData(0.1, target);
@@ -123,7 +122,7 @@ export class BulletManager extends Component {
             position: _startPos,
             angle: 315,
             inputDirection: new Vec3(direction.x, direction.y, 0),
-            speed: SpaceAttack.baseSpeed * 3,
+            speed: SpaceAttack.ConstValue.baseSpeed * 3,
         };
         data = new BulletData(param);
         data.setTrackingData(0.1, target);
@@ -131,7 +130,7 @@ export class BulletManager extends Component {
     }
 
     spacecraftFireLaser(followNode: Node) {
-        let height = SpaceAttack.allowedArea.yMax - SpaceAttack.allowedArea.yMin;
+        let height = SpaceAttack.ConstValue.allowedArea.yMax - SpaceAttack.ConstValue.allowedArea.yMin;
         //激光
         let param: BulletBaseDataParam = {
             moveType: BULLET_MOVE_TYPE.TRACKING,
@@ -162,26 +161,28 @@ export class BulletManager extends Component {
     }
 
     onLoad() {
-        BulletEd.addObserver(this);
+        // BulletEd.addObserver(this);
         this._gameScene = this.node.getComponent(GameScene)!;
         NotificationCenter.addObserver(this, this.spacecraftFireStraighLine.bind(this), NotificationMessage.SPACECRAFT_FIRE_STRAIGHTLINE);
         NotificationCenter.addObserver(this, this.spacecraftFireTracking.bind(this), NotificationMessage.SPACECRAFT_FIRE_TRACKING);
         NotificationCenter.addObserver(this, this.spacecraftFireLaser.bind(this), NotificationMessage.SPACECRAFT_FIRE_LASER);
+        NotificationCenter.addObserver(this, this.enemyFire.bind(this), NotificationMessage.ENEMY_FIRE);
     }
 
     onDestroy() {
-        BulletEd.removeObserver(this);
+        // BulletEd.removeObserver(this);
 
         NotificationCenter.removeObserver(this, NotificationMessage.SPACECRAFT_FIRE_STRAIGHTLINE);
         NotificationCenter.removeObserver(this, NotificationMessage.SPACECRAFT_FIRE_TRACKING);
         NotificationCenter.removeObserver(this, NotificationMessage.SPACECRAFT_FIRE_LASER);
+        NotificationCenter.removeObserver(this, NotificationMessage.ENEMY_FIRE);
     }
 
-    onEventMessage(event: NotificationMessage, data?: any) {
-        switch (event) {
-            case NotificationMessage.ENEMY_FIRE:
-                this.enemyFire(data);
-                break;
-        }
-    }
+    // onEventMessage(event: NotificationMessage, data?: any) {
+    //     switch (event) {
+    //         case NotificationMessage.ENEMY_FIRE:
+    //             this.enemyFire(data);
+    //             break;
+    //     }
+    // }
 }

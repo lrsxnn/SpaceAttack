@@ -1,12 +1,13 @@
+import { BaseComponent } from './../Component/BaseComponent';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 
-import { _decorator, Component, Node, EventTouch, Vec2, Vec3, UITransform, math } from 'cc';
+import { _decorator, Node, EventTouch, Vec2, Vec3, UITransform } from 'cc';
 import { SpaceAttack } from '../Tools/Tools';
 import { NotificationMessage } from '../Notification/NotificationMessage';
 const { ccclass, property } = _decorator;
 
 @ccclass('Joystick')
-export class Joystick extends Component {
+export class Joystick extends BaseComponent {
     @property(Node)
     midNode: Node = null!;
     @property(Node)
@@ -21,13 +22,6 @@ export class Joystick extends Component {
 
     onLoad() {
         this.midNode.setPosition(Vec3.ZERO);
-    }
-
-    start() {
-        this.joyBackground.on(Node.EventType.TOUCH_START, this.onTouched, this);
-        this.joyBackground.on(Node.EventType.TOUCH_MOVE, this.onTouched, this);
-        this.joyBackground.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
-        this.joyBackground.on(Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this);
     }
 
     onTouched(event: EventTouch) {
@@ -46,6 +40,20 @@ export class Joystick extends Component {
     onTouchEnd(event: EventTouch) {
         this.midNode.setPosition(Vec3.ZERO);
         NotificationCenter.sendNotification(NotificationMessage.JOYSTICK_MOVE, Vec3.ZERO);
+    }
+
+    onPauseEnter() {
+        this.joyBackground.off(Node.EventType.TOUCH_START, this.onTouched, this);
+        this.joyBackground.off(Node.EventType.TOUCH_MOVE, this.onTouched, this);
+        this.joyBackground.off(Node.EventType.TOUCH_END, this.onTouchEnd, this);
+        this.joyBackground.off(Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this);
+    }
+
+    onPauseExit() {
+        this.joyBackground.on(Node.EventType.TOUCH_START, this.onTouched, this);
+        this.joyBackground.on(Node.EventType.TOUCH_MOVE, this.onTouched, this);
+        this.joyBackground.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
+        this.joyBackground.on(Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this);
     }
 }
 

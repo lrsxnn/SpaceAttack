@@ -1,11 +1,11 @@
-import { RotaryStarBulletMoveController } from './../Prefab/BulletMoveController/RotaryStarBulletMoveController';
-import { LaserBulletMoveController } from './../Prefab/BulletMoveController/LaserBulletMoveController';
-import { TrackingBulletMoveController } from './../Prefab/BulletMoveController/TrackingBulletMoveController';
-import { StraightLineBulletMoveController } from './../Prefab/BulletMoveController/StraightLineBulletMoveController';
+import { RotaryStarBulletMoveController } from './../Component/BulletMoveController/RotaryStarBulletMoveController';
+import { LaserBulletMoveController } from './../Component/BulletMoveController/LaserBulletMoveController';
+import { TrackingBulletMoveController } from './../Component/BulletMoveController/TrackingBulletMoveController';
+import { StraightLineBulletMoveController } from './../Component/BulletMoveController/StraightLineBulletMoveController';
 import { BulletData, BULLET_MOVE_TYPE, BULLET_COLLIDER_TYPE } from './BulletData';
 import { Bullet } from './../Prefab/Bullet';
 import { Node, Prefab, NodePool, instantiate, Mesh, MeshRenderer, Collider, SphereCollider, ConeCollider, CylinderCollider } from 'cc';
-import { BulletMoveController } from '../Prefab/BulletMoveController/BulletMoveController';
+import { BulletMoveController } from '../Component/BulletMoveController/BulletMoveController';
 
 export class BulletFactory {
     /**

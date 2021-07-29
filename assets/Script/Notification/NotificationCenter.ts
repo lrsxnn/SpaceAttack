@@ -1,3 +1,4 @@
+import { SpaceAttack } from '../Tools/Tools';
 import { NotificationMessage } from './NotificationMessage';
 
 interface ObserverInfo {
@@ -30,13 +31,19 @@ class NotificationTail {
     }
 }
 
-
+interface pauseInfo {
+    funcType: string,
+    event?: NotificationMessage,
+    args?: any,
+}
 
 export class NotificationCenter {
     private static observers: ObserverInfo = {};
     private static is_block_notifications = false;
     private static pending_notification_head: NotificationTail | null;
     private static pending_notification_tail: NotificationTail | null;
+
+    private static pauseNotificatonList: pauseInfo[] = [];
 
     private static arrayRemoveIndex(list: MessageInfo[], idx: number) {
         list.splice(idx, 1);
@@ -68,8 +75,16 @@ export class NotificationCenter {
      * @param args
      */
     public static sendNotification(event: NotificationMessage, args: any = {}) {
-        if (NotificationCenter.observers[event] != null) {
-            NotificationCenter.performSelector(NotificationCenter.observers[event], args);
+        if (SpaceAttack.ConstValue.pause) {
+            NotificationCenter.pauseNotificatonList.push({
+                funcType: "send",
+                event: event,
+                args: args,
+            });
+        } else {
+            if (NotificationCenter.observers[event] != null) {
+                NotificationCenter.performSelector(NotificationCenter.observers[event], args);
+            }
         }
     }
 
@@ -79,17 +94,25 @@ export class NotificationCenter {
      * @param args
      */
     public static postNotification(event: NotificationMessage, args: any = {}) {
-        if (NotificationCenter.is_block_notifications) {
-            let tail = new NotificationTail(null, event, args);
-            if (NotificationCenter.pending_notification_tail != null) {
-                NotificationCenter.pending_notification_tail.next = tail;
-            }
-            NotificationCenter.pending_notification_tail = tail;
-            if (NotificationCenter.pending_notification_head == null) {
-                NotificationCenter.pending_notification_head = tail;
-            }
+        if (SpaceAttack.ConstValue.pause) {
+            NotificationCenter.pauseNotificatonList.push({
+                funcType: "post",
+                event: event,
+                args: args,
+            });
         } else {
-            NotificationCenter.sendNotification(event, args);
+            if (NotificationCenter.is_block_notifications) {
+                let tail = new NotificationTail(null, event, args);
+                if (NotificationCenter.pending_notification_tail != null) {
+                    NotificationCenter.pending_notification_tail.next = tail;
+                }
+                NotificationCenter.pending_notification_tail = tail;
+                if (NotificationCenter.pending_notification_head == null) {
+                    NotificationCenter.pending_notification_head = tail;
+                }
+            } else {
+                NotificationCenter.sendNotification(event, args);
+            }
         }
     }
 
@@ -111,29 +134,64 @@ export class NotificationCenter {
     }
 
     public static blockNotifications(): boolean {
-        return NotificationCenter.is_block_notifications = true;
+        if (SpaceAttack.ConstValue.pause) {
+            NotificationCenter.pauseNotificatonList.push({
+                funcType: "blockNotifications",
+            });
+            return true;
+        } else {
+            return NotificationCenter.is_block_notifications = true;
+        }
     }
 
     public static unBlockNotifications() {
-        let trail = NotificationCenter.pending_notification_head;
-        while (trail != null) {
-            let event = trail.event;
-            let observers = NotificationCenter.observers[event];
-            if (observers != null) {
-                NotificationCenter.pending_notification_head = trail.next;
-                let unblocking_flag = NotificationCenter.performSelector(observers, trail.context);
-                if (unblocking_flag) {
-                    return;
+        if (SpaceAttack.ConstValue.pause) {
+            NotificationCenter.pauseNotificatonList.push({
+                funcType: "unBlockNotifications",
+            });
+        } else {
+            let trail = NotificationCenter.pending_notification_head;
+            while (trail != null) {
+                let event = trail.event;
+                let observers = NotificationCenter.observers[event];
+                if (observers != null) {
+                    NotificationCenter.pending_notification_head = trail.next;
+                    let unblocking_flag = NotificationCenter.performSelector(observers, trail.context);
+                    if (unblocking_flag) {
+                        return;
+                    }
                 }
+                trail = NotificationCenter.pending_notification_head;
             }
-            trail = NotificationCenter.pending_notification_head;
+            NotificationCenter.purgePendingNotifications();
         }
-        NotificationCenter.purgePendingNotifications();
     }
 
     private static purgePendingNotifications() {
         NotificationCenter.is_block_notifications = false;
         NotificationCenter.pending_notification_head = null;
         NotificationCenter.pending_notification_tail = null;
+    }
+
+    public static cleanPauseList() {
+        while (NotificationCenter.pauseNotificatonList.length > 0) {
+            let pauseInfo = NotificationCenter.pauseNotificatonList.shift();
+            if (pauseInfo) {
+                switch (pauseInfo.funcType) {
+                    case "send":
+                        NotificationCenter.sendNotification(pauseInfo.event!, pauseInfo.args);
+                        break;
+                    case "post":
+                        NotificationCenter.postNotification(pauseInfo.event!, pauseInfo.args);
+                        break;
+                    case "blockNotifications":
+                        NotificationCenter.blockNotifications();
+                        break;
+                    case "unBlockNotifications":
+                        NotificationCenter.unBlockNotifications();
+                        break;
+                }
+            }
+        }
     }
 }
