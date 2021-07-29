@@ -29,7 +29,7 @@ export class PromptBox extends Component {
             } else {
                 let pos = this.node.position.clone();
                 pos.x += (this._target_pos!.x - pos.x) * (dt / (this.uptime - this._curTime));
-                pos.y += (this._target_pos!.y - pos.x) * (dt / (this.uptime - this._curTime));
+                pos.y += (this._target_pos!.y - pos.y) * (dt / (this.uptime - this._curTime));
                 this.node.setPosition(pos);
             }
             this._curTime += dt;

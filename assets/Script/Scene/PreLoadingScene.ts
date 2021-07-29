@@ -13,7 +13,7 @@ export class PreLoadingScene extends Component {
 
     onLoad() {
         this.progress.progress = 0.01;
-        this.label.string = `0%`;
+        this.label.string = "0%";
     }
 
     start() {

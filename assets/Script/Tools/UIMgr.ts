@@ -211,7 +211,7 @@ class UIMgr {
     /**
      * 从大变小特效
      */
-    private showActB2S(node: Node, callFunc: Function) {
+    private showActB2S(node: Node, callFunc: Function | null = null) {
         if (node) {
             let actNode = node.getChildByName('actNode');
             if (actNode) {
