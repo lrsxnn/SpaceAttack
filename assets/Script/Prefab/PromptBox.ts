@@ -8,6 +8,10 @@ export class PromptBox extends Component {
     duration: number = 1;
     @property
     uptime = 1;
+    @property(Node)
+    baseNode: Node = null!;
+    @property(Node)
+    bg: Node = null!;
 
     private _closeViewCallback: Function = null!;
 
@@ -18,8 +22,8 @@ export class PromptBox extends Component {
     private _isMove = false;
 
     onLoad() {
-        this._baseBgFrame = find('bg', this.node)!.getComponent(Sprite)!.spriteFrame!;
-        this._baseBgWidth = find('bg', this.node)!.getComponent(UITransform)!.width;
+        this._baseBgFrame = this.bg.getComponent(Sprite)!.spriteFrame!;
+        this._baseBgWidth = this.bg.getComponent(UITransform)!.width;
     }
 
     update(dt: number) {
@@ -27,26 +31,25 @@ export class PromptBox extends Component {
             if (this._curTime >= this.uptime) {
                 this._isMove = false;
             } else {
-                let pos = this.node.position.clone();
+                let pos = this.baseNode.position.clone();
                 pos.x += (this._target_pos!.x - pos.x) * (dt / (this.uptime - this._curTime));
                 pos.y += (this._target_pos!.y - pos.y) * (dt / (this.uptime - this._curTime));
-                this.node.setPosition(pos);
+                this.baseNode.setPosition(pos);
             }
             this._curTime += dt;
         }
     }
 
     public show(text: string, bgFrame: SpriteFrame | null, tarPos: Vec2 | null, bgWidth: number | null) {
-        let bgNode = find('bg', this.node)!;
         if (bgFrame) {
-            bgNode.getComponent(Sprite)!.spriteFrame = bgFrame;
+            this.bg.getComponent(Sprite)!.spriteFrame = bgFrame;
         }
 
-        let lblNodt = find('lbl', bgNode)!;
+        let lblNodt = find('lbl', this.bg)!;
         let lblCpt = lblNodt.getComponent(Label)!;
         lblCpt.string = text;
         if (bgWidth) {
-            bgNode.getComponent(UITransform)!.width = bgWidth;
+            this.bg.getComponent(UITransform)!.width = bgWidth;
         }
 
         let ani = this.node.getComponent(Animation)!;
@@ -62,7 +65,7 @@ export class PromptBox extends Component {
     public changeMove(pos: Vec2) {
         let quickTime = 0.1;
         if (!this._isMove) {
-            tween(this.node).to(quickTime, { position: new Vec3(pos.x, pos.y, 0) }).start();
+            tween(this.baseNode).to(quickTime, { position: new Vec3(pos.x, pos.y, 0) }).start();
         } else {
             this._target_pos = pos;
         }
@@ -81,9 +84,9 @@ export class PromptBox extends Component {
 
     private close() {
         this._curTime = null;
-        find('bg', this.node)!.getComponent(Sprite)!.spriteFrame = this._baseBgFrame;
-        find('bg', this.node)!.getComponent(UITransform)!.width = this._baseBgWidth;
-        tween(this.node).stop();
+        this.bg.getComponent(Sprite)!.spriteFrame = this._baseBgFrame;
+        this.bg.getComponent(UITransform)!.width = this._baseBgWidth;
+        tween(this.baseNode).stop();
         if (this._closeViewCallback) {
             this._closeViewCallback();
         }

@@ -52,7 +52,7 @@
               "r": 255,
               "g": 255,
               "b": 255,
-              "a": 0
+              "a": 255
             },
             {
               "__type__": "cc.Color",
@@ -67,11 +67,11 @@
       }
     ],
     "_commonTargets": [],
-    "_hash": 333252619
+    "_hash": 2011416495
   },
   {
     "__type__": "cc.animation.HierarchyPath",
-    "path": "bg"
+    "path": "Node/bg"
   },
   {
     "__type__": "cc.animation.ComponentPath",

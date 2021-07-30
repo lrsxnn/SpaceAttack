@@ -57,7 +57,7 @@ class SceneManagerUtil {
         }
 
         let scene = director.getScene()!;
-        let canvas = scene.getChildByName('Canvas');
+        // let canvas = scene.getChildByName('Canvas');
         scene.autoReleaseAssets = true;
 
         NotificationCenter.blockNotifications();

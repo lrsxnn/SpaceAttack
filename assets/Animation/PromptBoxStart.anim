@@ -62,11 +62,11 @@
       }
     ],
     "_commonTargets": [],
-    "_hash": 904448408
+    "_hash": 2588300336
   },
   {
     "__type__": "cc.animation.HierarchyPath",
-    "path": "bg"
+    "path": "Node/bg"
   },
   {
     "__type__": "cc.animation.ComponentPath",

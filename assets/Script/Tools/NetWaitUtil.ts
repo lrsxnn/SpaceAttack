@@ -1,6 +1,6 @@
 import { NetWait } from './../Prefab/NetWait';
 
-import { _decorator, Node, resources, Prefab, instantiate, game, view, Vec3 } from 'cc';
+import { _decorator, Node, resources, Prefab, instantiate, game, view, Vec3, error } from 'cc';
 import UIMgr from './UIMgr';
 const { ccclass } = _decorator;
 
@@ -31,11 +31,6 @@ class NetWaitUtil {
             game.addPersistRootNode(this._node);
         }
 
-        let size = view.getDesignResolutionSize();
-        let pos = new Vec3();
-        pos.x = size.width / 2;
-        pos.y = size.height / 2;
-        this._node.setPosition(pos);
         return this._node;
     }
 

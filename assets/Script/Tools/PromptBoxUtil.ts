@@ -33,7 +33,7 @@ class PromptBoxUtil {
             this._promptBoxPool.put(node);
             game.addPersistRootNode(node);
             node.active = false;
-            this._popHeight = find('bg', node)!.getComponent(UITransform)!.height;
+            this._popHeight = find('Node/bg', node)!.getComponent(UITransform)!.height;
         }
     }
 
@@ -77,11 +77,11 @@ class PromptBoxUtil {
 
         let tarPos = this.getTargetPos(this._popList.length - 1);
         cpt.show(text, bgSpf, tarPos, bgwidth);
-        let size = view.getDesignResolutionSize();
+        // let size = view.getDesignResolutionSize();
         let pos = new Vec3();
-        pos.x = size.width / 2;
-        pos.y = Math.min(size.height / 2, tarPos.y);
-        node.setPosition(pos);
+        pos.x = 0;//size.width / 2;
+        pos.y = Math.min(0, tarPos.y);//Math.min(size.height / 2, tarPos.y);
+        node.getChildByName("Node")!.setPosition(pos);
     }
 
     private removePopItem(node: Node) {
@@ -98,9 +98,9 @@ class PromptBoxUtil {
 
     private getTargetPos(index: number): Vec2 {
         let topPos = Vec2.ZERO.clone();
-        let size = view.getDesignResolutionSize();
-        topPos.x = size.width / 2;
-        topPos.y = size.height / 4 * 3;
+        // let size = view.getDesignResolutionSize();
+        topPos.x = 0;//size.width / 2;
+        topPos.y = 180;//size.height / 4 * 3;
         topPos.y -= index * this._popHeight;
         return topPos;
     }
