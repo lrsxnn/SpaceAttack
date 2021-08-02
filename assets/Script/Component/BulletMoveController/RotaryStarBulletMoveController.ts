@@ -18,7 +18,7 @@ export class RotaryStarBulletMoveController extends BulletMoveController {
     protected moveAction(dt: number): void {
         this._startTime += dt / 2;
         let offset = this._bullet.data.angle / 360;
-        this._desiredVelocity = new Vec3(Math.sin(offset * (this._startTime + 30)), Math.cos(offset * (this._startTime + 30)), 1);
+        this._desiredVelocity.set(Math.sin(offset * (this._startTime + 30)), Math.cos(offset * (this._startTime + 30)), 1);
         this._desiredVelocity.multiplyScalar(Math.sin(this._startTime - offset) * Math.cos(offset) * this._bullet.data.speed);
 
         this._bullet.data.position.set(this._desiredVelocity);

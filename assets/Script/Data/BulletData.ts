@@ -50,7 +50,7 @@ export class BulletData {
         this.position = data.position;
         this.angle = -data.angle;
         this.inputDirection = data.inputDirection;
-        this.damage = typeof data.radius === 'number' ? data.radius : 1;
+        this.damage = typeof data.damage === 'number' ? data.damage : 1;
 
         this.radius = typeof data.radius === 'number' ? data.radius : 0.5;
         this.height = typeof data.height === 'number' ? data.height : 1;
@@ -64,7 +64,7 @@ export class BulletData {
 
         switch (this.colliderType) {
             case BULLET_COLLIDER_TYPE.SPHERE:
-                this.scale.x = this.radius * 2
+                this.scale.x = this.radius * 2;
                 this.scale.y = this.radius * 2;
                 break;
             case BULLET_COLLIDER_TYPE.CONE:

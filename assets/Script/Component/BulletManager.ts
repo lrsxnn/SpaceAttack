@@ -134,7 +134,7 @@ export class BulletManager extends Component {
         //激光
         let param: BulletBaseDataParam = {
             moveType: BULLET_MOVE_TYPE.TRACKING,
-            colliderType: BULLET_COLLIDER_TYPE.CONE,
+            colliderType: BULLET_COLLIDER_TYPE.CYLINDER,
             position: Vec3.ZERO,
             angle: 0,
             inputDirection: Vec3.UP,
@@ -147,7 +147,7 @@ export class BulletManager extends Component {
 
         param = {
             moveType: BULLET_MOVE_TYPE.TRACKING,
-            colliderType: BULLET_COLLIDER_TYPE.CONE,
+            colliderType: BULLET_COLLIDER_TYPE.CYLINDER,
             position: Vec3.ZERO,
             angle: 0,
             inputDirection: Vec3.UP,
