@@ -34,35 +34,35 @@ export class BulletManager extends Component {
     private _spacecraftBulletPool: NodePool = new NodePool('Bullet');
 
     enemyFire(startPosition: Vec3) {
-        // for (let i = 0; i < 8; i++) {
-        //     let input = new Vec2(Math.sin(i / 8 * 2 * Math.PI), Math.cos(i / 8 * 2 * Math.PI));
-        //     input = SpaceAttack.UnityVec2.clampMagnitude(input, 1);
+        for (let i = 0; i < 8; i++) {
+            let input = new Vec2(Math.sin(i / 8 * 2 * Math.PI), Math.cos(i / 8 * 2 * Math.PI));
+            input = SpaceAttack.UnityVec2.clampMagnitude(input, 1);
 
-        //     let param: BulletBaseDataParam = {
-        //         moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
-        //         colliderType: BULLET_COLLIDER_TYPE.SPHERE,
-        //         position: startPosition,
-        //         angle: i / 8 * 360,
-        //         inputDirection: new Vec3(input.x, input.y, 0),
-        //         speed: SpaceAttack.baseSpeed,
-        //     };
-        //     let data = new BulletData(param);
-        //     this._bulletFactory.createBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
-        // }
-
-        for (let i = 0; i < 200; i++) {
             let param: BulletBaseDataParam = {
-                moveType: BULLET_MOVE_TYPE.ROTARYSTAR,
+                moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
                 colliderType: BULLET_COLLIDER_TYPE.SPHERE,
                 position: startPosition,
-                angle: i / 200 * 360,
-                inputDirection: Vec3.ZERO,
+                angle: i / 8 * 360,
+                inputDirection: new Vec3(input.x, input.y, 0),
                 speed: SpaceAttack.ConstValue.baseSpeed,
             };
             let data = new BulletData(param);
-            data.setRotaryStarData();
             this._bulletFactory.createBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
         }
+
+        // for (let i = 0; i < 200; i++) {
+        //     let param: BulletBaseDataParam = {
+        //         moveType: BULLET_MOVE_TYPE.ROTARYSTAR,
+        //         colliderType: BULLET_COLLIDER_TYPE.SPHERE,
+        //         position: startPosition,
+        //         angle: i / 200 * 360,
+        //         inputDirection: Vec3.ZERO,
+        //         speed: SpaceAttack.ConstValue.baseSpeed,
+        //     };
+        //     let data = new BulletData(param);
+        //     data.setRotaryStarData();
+        //     this._bulletFactory.createBullet(this.enemyBullet, this._enemyBulletPool, this.node, this.enemySphere, data);
+        // }
     }
 
     spacecraftFireStraighLine(startPosition: Vec3) {
@@ -96,7 +96,7 @@ export class BulletManager extends Component {
     spacecraftFireTracking(startPosition: Vec3) {
         let _startPos = new Vec3();
         //追踪弹
-        let target = this._gameScene.getNearestEnemy();
+        let target = this._gameScene.getNearestEnemy(startPosition);
 
         let direction = new Vec2(Math.sin(1 / 8 * 2 * Math.PI), Math.cos(1 / 8 * 2 * Math.PI));
         direction = SpaceAttack.UnityVec2.clampMagnitude(direction, 1);

@@ -3,7 +3,7 @@ import { BaseComponent } from './../Component/BaseComponent';
 import { Bullet } from './Bullet';
 import { NotificationMessage } from './../Notification/NotificationMessage';
 
-import { _decorator, Vec2, Vec3, BoxCollider, ITriggerEvent } from 'cc';
+import { _decorator, Vec2, Vec3, BoxCollider, ITriggerEvent, NodePool } from 'cc';
 import { BulletEd } from '../Data/BulletData';
 import { SpaceAttack } from '../Tools/Tools';
 const { ccclass, property } = _decorator;
@@ -27,6 +27,8 @@ export class Enemy extends BaseComponent {
     private _changePos = true;
     private _changePosTime = 0;
 
+    private _enemyPool: NodePool = null!;
+
     onPauseExit() {
         this.node.getComponent(BoxCollider)!.on('onTriggerEnter', this.onTriggerStay, this);
         this.node.getComponent(BoxCollider)!.on('onTriggerStay', this.onTriggerStay, this);
@@ -38,42 +40,14 @@ export class Enemy extends BaseComponent {
     }
 
     start() {
-        // this.schedule(() => {
-        //     BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
-        // }, 1);
+        this.schedule(() => {
+            NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        }, 1);
         // BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
-        NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        // NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
     }
 
     onFixedUpdate() {
-        // if (this._sDown) {
-        //     this._axisVertical -= 0.05;
-        //     if (this._axisVertical <= -1) {
-        //         this._axisVertical = -1;
-        //     }
-        // } else if (this._wDown) {
-        //     this._axisVertical += 0.05;
-        //     if (this._axisVertical >= 1) {
-        //         this._axisVertical = 1;
-        //     }
-        // } else {
-        //     this._axisVertical = 0;
-        // }
-
-        // if (this._aDown) {
-        //     this._axisHorizontal -= 0.05;
-        //     if (this._axisHorizontal <= -1) {
-        //         this._axisHorizontal = -1;
-        //     }
-        // } else if (this._dDown) {
-        //     this._axisHorizontal += 0.05;
-        //     if (this._axisHorizontal >= 1) {
-        //         this._axisHorizontal = 1;
-        //     }
-        // } else {
-        //     this._axisHorizontal = 0;
-        // }
-
         this._changePosTime += this._fixedTimeStep;
         if (this._changePosTime > 2) {
             this._changePosTime -= 2;
@@ -114,10 +88,34 @@ export class Enemy extends BaseComponent {
         if (bullet) {
             this.hp -= bullet.damage;
         }
+
+        if (this.hp <= 0) {
+            this.enemyDead();
+        }
+    }
+
+    reuse(arg: any) {
+        this.setPool(arg[0]);
+    }
+
+    unuse() {
+
     }
 
     public init() {
+        this.hp = 100;
+        this._axisHorizontal = 0;
+        this._axisVertical = 0;
+        this._changePos = true;
+        this._changePosTime = 0;
+    }
 
+    public setPool(enemyPool: NodePool) {
+        this._enemyPool = enemyPool;
+    }
+
+    public enemyDead() {
+        this._enemyPool.put(this.node);
     }
 }
 
