@@ -40,19 +40,14 @@ export class Enemy extends BaseComponent {
     }
 
     start() {
-        // this.schedule(() => {
-        //     BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
-        // }, 1);
+        this.schedule(() => {
+            NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        }, 1);
         // BulletEd.notifyEvent(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
-        NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
+        // NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
     }
 
     onFixedUpdate() {
-        if (this.hp <= 0) {
-            this.enemyDead();
-            return;
-        }
-
         this._changePosTime += this._fixedTimeStep;
         if (this._changePosTime > 2) {
             this._changePosTime -= 2;
@@ -92,6 +87,10 @@ export class Enemy extends BaseComponent {
         let bullet = node.getComponent(Bullet)
         if (bullet) {
             this.hp -= bullet.damage;
+        }
+
+        if (this.hp <= 0) {
+            this.enemyDead();
         }
     }
 

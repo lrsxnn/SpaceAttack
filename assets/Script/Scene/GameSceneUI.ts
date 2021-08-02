@@ -37,7 +37,9 @@ export class GameSceneUI extends Component {
     @property(Node)
     roomButton: Node = null!;
     @property(EditBox)
-    editBox: EditBox = null!;
+    roomEditBox: EditBox = null!;
+    @property(EditBox)
+    nameEditBox: EditBox = null!;
 
     private _app: cloudbase.app.App = null!;
     private _auth: cloudbase.auth.App = null!;
@@ -94,45 +96,53 @@ export class GameSceneUI extends Component {
      * 点击创建房间
      */
     onClickCreateRoom(event: Event, customEventData: string) {
-        if (this.editBox.string != "") {
-            let playerData: MGOBE.types.PlayerInfoPara = {
-                name: 'Player1',
-                customPlayerStatus: 1,
-                customProfile: ''
-            }
-
-            let createRoomData: MGOBE.types.CreateRoomPara = {
-                roomName: this.editBox.string,
-                roomType: "1v1",
-                maxPlayers: 2,
-                isPrivate: true,
-                customProperties: '',
-                playerInfo: playerData
-            }
-
-            NetWaitUtil.netWaitStart('创建房间......', 'createRoom');
-            this._room.createRoom(createRoomData, event => {
-                NetWaitUtil.netWaitEnd('createRoom');
-                if (event.code === 0) {
-                    log('创建房间成功');
-                    this.showGamePanel();
-                } else {
-                    error(`创建房间失败 ${event.code} ${event.msg}`);
-                }
-            })
-        } else {
+        if (this.roomEditBox.string == "") {
             PromptBoxUtil.show('请输入房间名称');
+            return;
         }
+        if (this.nameEditBox.string == "") {
+            PromptBoxUtil.show('请输入昵称名称');
+            return;
+        }
+        let playerData: MGOBE.types.PlayerInfoPara = {
+            name: this.nameEditBox.string,
+            customPlayerStatus: 1,
+            customProfile: ''
+        }
+
+        let createRoomData: MGOBE.types.CreateRoomPara = {
+            roomName: this.editBox.string,
+            roomType: "1v1",
+            maxPlayers: 2,
+            isPrivate: true,
+            customProperties: '',
+            playerInfo: playerData
+        }
+
+        NetWaitUtil.netWaitStart('创建房间......', 'createRoom');
+        this._room.createRoom(createRoomData, event => {
+            NetWaitUtil.netWaitEnd('createRoom');
+            if (event.code === 0) {
+                log('创建房间成功');
+                this.showGamePanel();
+            } else {
+                error(`创建房间失败 ${event.code} ${event.msg}`);
+            }
+        })
     }
 
     /**
      * 点击加入房间
      */
     onClickJoinRoom(event: Event, customEventData: string) {
+        if (this.nameEditBox.string == "") {
+            PromptBoxUtil.show('请输入昵称名称');
+            return;
+        }
         let json: MGOBE.types.RoomInfo = JSON.parse(customEventData);
         this._room.initRoom({ id: json.id });
         let playerData: MGOBE.types.PlayerInfoPara = {
-            name: 'Player2',
+            name: this.nameEditBox.string,
             customPlayerStatus: 1,
             customProfile: ''
         }
