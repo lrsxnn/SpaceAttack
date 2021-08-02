@@ -1,44 +1,89 @@
-import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard} from 'cc';
+import { Bullet } from './../Prefab/Bullet';
+import { Enemy } from './../Prefab/Enemy';
+import { Tag } from './../Tools/Tag';
+import { EnemyFactory } from './../Data/EnemyFactory';
+import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard, Prefab, NodePool, Vec3, instantiate, log } from 'cc';
 const { ccclass, property } = _decorator;
 
-
+const START_POS = [new Vec3(-5, -10, 0), new Vec3(5, -10, 0)];
 
 @ccclass('GameScene')
 export class GameScene extends Component {
-    @property(Node)
-    spacecraft: Node = null!;
-    @property(Node)
-    enemy: Node = null!;
+    @property(Prefab)
+    spacecraft: Prefab = null!;
+    @property(Prefab)
+    enemy: Prefab = null!;
 
+    private _enemyFactory: EnemyFactory = new EnemyFactory();
+    private _startPoint = [0, 1];
 
-    onLoad() {
-        systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDown, this);
-        systemEvent.on(SystemEventType.KEY_UP, this.onKeyUp, this);
-    }
-
-    onDestroy() {
-        systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDown, this);
-        systemEvent.off(SystemEventType.KEY_UP, this.onKeyUp, this);
-    }
-
-    start() {
-        // this.schedule(() => {
-        //     error(Vec3.angle(this.spacecraft.position, this.enemy.position) * 180 / Math.PI);
-        // }, 1);
-    }
-
-    onKeyDown(event: EventKeyboard) {
-        switch (event.keyCode) {
-            case 81://q
-                break;
+    /**
+     * 清除画面
+     */
+    public cleanScene() {
+        for (let i = this.node.children.length - 1; i >= 0; i--) {
+            let node = this.node.children[i];
+            if (node.name.startsWith("spacecraft")) {
+                node.destroy();
+            } else if (node.name.startsWith("enemy")) {
+                node.getComponent(Enemy)!.enemyDead();
+            } else if (node.name.startsWith("bullet")) {
+                node.getComponent(Bullet)!.bulletDead();
+            }
         }
     }
 
-    onKeyUp(event: EventKeyboard) {
-
+    /**
+     * 创建飞船
+     */
+    public createSpacecraft(id: string) {
+        if (this.node.getChildByName(`spacecraft${id}`)) {
+            log(`该玩家已经加入${id}`);
+            return;
+        }
+        let spacecraft = instantiate(this.spacecraft);
+        this.node.addChild(spacecraft);
+        spacecraft.setPosition(START_POS[this._startPoint[0]]);
+        spacecraft.getComponent(Tag)!.tag = this._startPoint.shift();
+        spacecraft.name = `spacecraft${id}`;
     }
 
-    public getNearestEnemy(): Node {
-        return this.enemy;
+    /**
+     * 查找最近的敌人
+     */
+    public getNearestEnemy(spacecraft: Vec3): Node | null {
+        let length = Infinity;
+        let _enemy = null;
+
+        for (let i = 0; i < this.node.children.length; i++) {
+            let node = this.node.children[i];
+            if (node.name.startsWith("enemy")) {
+                let distance = Vec3.distance(spacecraft, node.position);
+                if (distance < length) {
+                    length = distance;
+                    _enemy = node;
+                }
+            }
+        }
+        return _enemy;
+    }
+
+    /**
+     * 移除飞船
+     */
+    public removeSpacecraft(id: string) {
+        let spacecraft = this.node.getChildByName(`spacecraft${id}`);
+        if (spacecraft) {
+            this._startPoint.push(spacecraft.getComponent(Tag)!.tag);
+            this._startPoint.sort();
+            spacecraft.destroy();
+        }
+    }
+
+    /**
+     * 游戏开始
+     */
+    public startGame() {
+        this._enemyFactory.createEnemy(this.enemy, this.node, 0);
     }
 }

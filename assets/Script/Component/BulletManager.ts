@@ -96,7 +96,7 @@ export class BulletManager extends Component {
     spacecraftFireTracking(startPosition: Vec3) {
         let _startPos = new Vec3();
         //追踪弹
-        let target = this._gameScene.getNearestEnemy();
+        let target = this._gameScene.getNearestEnemy(startPosition);
 
         let direction = new Vec2(Math.sin(1 / 8 * 2 * Math.PI), Math.cos(1 / 8 * 2 * Math.PI));
         direction = SpaceAttack.UnityVec2.clampMagnitude(direction, 1);

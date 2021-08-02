@@ -54,7 +54,7 @@ export class Bullet extends BaseComponent {
 
     }
 
-    private bulletDead() {
+    public bulletDead() {
         if (this._collider !== null) {
             this._collider.off('onTriggerEnter', this.onTriggerEnter, this);
             this._collider.destroy();

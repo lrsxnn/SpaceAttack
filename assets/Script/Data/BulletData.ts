@@ -98,7 +98,7 @@ export class BulletData {
     /**
      * 设置追踪属性
      */
-    public setTrackingData(delayTime: number, targetNode: Node) {
+    public setTrackingData(delayTime: number, targetNode: Node | null) {
         this.delayTime = delayTime;
         this.targetNode = targetNode;
     }

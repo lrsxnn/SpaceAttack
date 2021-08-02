@@ -23,6 +23,7 @@ export class BulletFactory {
             bullet!.getComponent(Bullet)!.setPool(pool);
         }
         parent.addChild(bullet!);
+        bullet!.name = "bullet";
 
         //必须先设置父节点再更改mesh
         bullet!.getComponent(MeshRenderer)!.mesh = mesh;
