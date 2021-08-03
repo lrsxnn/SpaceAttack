@@ -1,26 +1,16 @@
-import { Enemy } from './../Prefab/Enemy';
-import { Spacecraft } from './../Prefab/Spacecraft';
-import { GameScene } from './GameScene';
-import { NotificationMessage } from './../Notification/NotificationMessage';
 import { NotificationCenter } from './../Notification/NotificationCenter';
-import adapter from '../Plugin/cloudbaseAdapter';
-import cloudbase from '../Plugin/cloudbase.js'
-import { _decorator, Component, Node, log, error, Label, EditBox, instantiate, Button, EventHandler, find, macro } from 'cc';
+import { RoomManager } from './../Component/RoomManager';
+import { GameScene } from './GameScene';
+import { _decorator, Component, Node, Label, EditBox, instantiate, Button, EventHandler, find, macro } from 'cc';
 import { SpaceAttack } from '../Tools/Tools';
-import NetWaitUtil from '../Tools/NetWaitUtil';
 import PromptBoxUtil from '../Tools/PromptBoxUtil';
+import { NotificationMessage } from '../Notification/NotificationMessage';
 const { ccclass, property } = _decorator;
-
-const Listener = MGOBE.Listener;
-const Room = MGOBE.Room;
-const Player = MGOBE.Player;
 
 @ccclass('GameSceneUI')
 export class GameSceneUI extends Component {
     @property(GameScene)
     gameScene: GameScene = null!;
-    @property(Label)
-    label: Label = null!;
     @property(Node)
     loginPanel: Node = null!;
     @property(Node)
@@ -29,6 +19,10 @@ export class GameSceneUI extends Component {
     gamePanel: Node = null!;
     @property(Node)
     startButton: Node = null!;
+    @property(Node)
+    pauseButton: Node = null!;
+    @property(Node)
+    resumeButton: Node = null!;
     @property(Node)
     joinButton: Node = null!;
 
@@ -41,55 +35,32 @@ export class GameSceneUI extends Component {
     @property(EditBox)
     nameEditBox: EditBox = null!;
 
-    private _app: cloudbase.app.App = null!;
-    private _auth: cloudbase.auth.App = null!;
-    private _room: MGOBE.Room = null!;
-    private _listenerInited = false;
     onLoad() {
-        cloudbase.useAdapters(adapter);
-        this._app = cloudbase.init({
-            env: 'spaceattack-server-3d18l398c3f5c'
-        })
-        this._auth = this._app.auth({
-            persistence: "local"
-        });
-        this._room = new Room();
-        this._room.onJoinRoom = this.onJoinRoom.bind(this);
-        this._room.onLeaveRoom = this.onLeaveRoom.bind(this);
-        this._room.onDismissRoom = this.onDismissRoom.bind(this);
-        this._room.onUpdate = this.onUpdate.bind(this);
-        this._room.onStartFrameSync = this.onStartFrameSync.bind(this);
-        this._room.onRecvFrame = this.onRecvFrame.bind(this);
-        this._room.onStopFrameSync = this.onStopFrameSync.bind(this);
-        this._listenerInited = false;
+        NotificationCenter.addObserver(this, this.onJoinRoom, NotificationMessage.BROADCAST_ROOM_JOINROOM);
+        NotificationCenter.addObserver(this, this.onLeaveRoom, NotificationMessage.BROADCAST_ROOM_LEAVEROOM);
+        NotificationCenter.addObserver(this, this.onDismissRoom, NotificationMessage.BROADCAST_ROOM_DISMISSROOM);
+        NotificationCenter.addObserver(this, this.onStartFrameSync, NotificationMessage.BROADCAST_ROOM_STARTFRAMESYNC);
+        NotificationCenter.addObserver(this, this.onStopFrameSync, NotificationMessage.BROADCAST_ROOM_STOPFRAMESYNC);
 
+        RoomManager.init();
         this.showLoginPanel();
     }
 
     onDestroy() {
-        if (this._listenerInited) {
-            Listener.clear();
-        }
-    }
+        NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_JOINROOM);
+        NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_LEAVEROOM);
+        NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_DISMISSROOM);
+        NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_STARTFRAMESYNC);
+        NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_STOPFRAMESYNC);
 
-    update(dt: number) {
-        //         this.label.string = `Spacecraft HP: ${this.gameScene.spacecraft.getComponent(Spacecraft)!.hp}
-        // Enemy HP: ${this.gameScene.enemy.getComponent(Enemy)!.hp}`;
+        RoomManager.clear();
     }
 
     /**
      * 点击登录
      */
     onClickLogin() {
-        if (this._auth.hasLoginState()) {
-            this.getGameInfo(this._auth.currentUser?.uid)
-        } else {
-            NetWaitUtil.show('登录中......');
-            this._auth.anonymousAuthProvider().signIn().then(() => {
-                NetWaitUtil.close();
-                this.getGameInfo(this._auth.currentUser?.uid)
-            });
-        }
+        RoomManager.login(this.showRoomPanel.bind(this));
     }
 
     /**
@@ -104,31 +75,7 @@ export class GameSceneUI extends Component {
             PromptBoxUtil.show('请输入昵称名称');
             return;
         }
-        let playerData: MGOBE.types.PlayerInfoPara = {
-            name: this.nameEditBox.string,
-            customPlayerStatus: 1,
-            customProfile: ''
-        }
-
-        let createRoomData: MGOBE.types.CreateRoomPara = {
-            roomName: this.editBox.string,
-            roomType: "1v1",
-            maxPlayers: 2,
-            isPrivate: true,
-            customProperties: '',
-            playerInfo: playerData
-        }
-
-        NetWaitUtil.netWaitStart('创建房间......', 'createRoom');
-        this._room.createRoom(createRoomData, event => {
-            NetWaitUtil.netWaitEnd('createRoom');
-            if (event.code === 0) {
-                log('创建房间成功');
-                this.showGamePanel();
-            } else {
-                error(`创建房间失败 ${event.code} ${event.msg}`);
-            }
-        })
+        RoomManager.createRoom(this.nameEditBox.string, this.roomEditBox.string, this.showGamePanel.bind(this));
     }
 
     /**
@@ -140,41 +87,16 @@ export class GameSceneUI extends Component {
             return;
         }
         let json: MGOBE.types.RoomInfo = JSON.parse(customEventData);
-        this._room.initRoom({ id: json.id });
-        let playerData: MGOBE.types.PlayerInfoPara = {
-            name: this.nameEditBox.string,
-            customPlayerStatus: 1,
-            customProfile: ''
-        }
-        let joinRoomData: MGOBE.types.JoinRoomPara = {
-            playerInfo: playerData
-        }
-        NetWaitUtil.netWaitStart('加入房间......', 'joinRoom');
-        this._room.joinRoom(joinRoomData, event => {
-            NetWaitUtil.netWaitEnd('joinRoom');
-            if (event.code === 0) {
-                log('加入房间成功');
-                this.showGamePanel();
-            } else {
-                error(`加入房间失败 ${event.code} ${event.msg}`);
-            }
-        })
+        RoomManager.joinRoom(json.id, this.nameEditBox.string, this.showGamePanel.bind(this));
     }
 
     /**
      * 点击离开房间
      */
     onClickLeaveRoom() {
-        NetWaitUtil.netWaitStart('离开房间......', 'leaveRoom');
-        this._room.leaveRoom({}, event => {
-            NetWaitUtil.netWaitEnd('leaveRoom');
-            if (event.code === 0) {
-                log('离开房间成功');
-                this.gameScene.removeSpacecraft(Player.id);
-                this.showRoomPanel();
-            } else {
-                error(`离开房间失败 ${event.code} ${event.msg}`);
-            }
+        RoomManager.leaveRoom(() => {
+            this.gameScene.cleanScene();
+            this.showRoomPanel();
         })
     }
 
@@ -185,13 +107,7 @@ export class GameSceneUI extends Component {
         // SpaceAttack.ConstValue.pause = true;
         // // director.pause();
         // // game.pause();
-        this._room.stopFrameSync({}, event => {
-            if (event.code === 0) {
-                log(`停止帧同步成功`);
-            } else {
-                error(`停止帧同步失败 ${event.code} ${event.msg}`);
-            }
-        })
+        RoomManager.stopFrameSync();
     }
 
     /**
@@ -201,132 +117,61 @@ export class GameSceneUI extends Component {
         // SpaceAttack.ConstValue.pause = false;
         // // director.resume();
         // // game.resume();
-        this._room.startFrameSync({}, event => {
-            if (event.code === 0) {
-                log(`恢复帧同步成功`);
-            } else {
-                error(`恢复帧同步失败 ${event.code} ${event.msg}`);
-            }
-        })
+        RoomManager.startFrameSync();
     }
 
     /**
      * 点击开始
      */
     onClickStart() {
-        this._room.startFrameSync({}, event => {
-            if (event.code === 0) {
-                log(`开启帧同步成功`);
-            } else {
-                error(`开启帧同步失败 ${event.code} ${event.msg}`);
-            }
-        })
+        RoomManager.startFrameSync();
     }
 
     /**
      * 加入房间广播
      */
-    onJoinRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.JoinRoomBst>) {
-        log(`新玩家加入 ${event.data.joinPlayerId}`);
-        this.startButton.active = this._room.roomInfo.owner == Player.id && this._room.roomInfo.maxPlayers == this._room.roomInfo.playerList.length;
-        this.gameScene.createSpacecraft(event.data.joinPlayerId);
+    private onJoinRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.JoinRoomBst>) {
+        this.startButton.active = event.data.roomInfo.owner == MGOBE.Player.id && event.data.roomInfo.maxPlayers == event.data.roomInfo.playerList.length;
+
+        for (let i = 0; i < event.data.roomInfo.playerList.length; i++) {
+            let player = event.data.roomInfo.playerList[i];
+            if (player.id === event.data.joinPlayerId) {
+                this.gameScene.createSpacecraft(player.id, player.name);
+                break;
+            }
+        }
     }
     /**
      * 离开房间广播
      */
-    onLeaveRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.LeaveRoomBst>) {
-        log(`玩家退出 ${event.data.leavePlayerId}`);
+    private onLeaveRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.LeaveRoomBst>) {
         this.startButton.active = false;
         this.gameScene.removeSpacecraft(event.data.leavePlayerId);
     }
     /**
      * 解散房间广播
      */
-    onDismissRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.DismissRoomBst>) {
-        log(`房间被解散 ${event.data.roomInfo.id} ${event.data.roomInfo.name}`);
+    private onDismissRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.DismissRoomBst>) {
         this.gameScene.cleanScene();
-    }
-    /**
-     * 房间状态广播
-     */
-    onUpdate(room?: MGOBE.Room | undefined) {
-        log(`房间状态更新 ${this.logRoomInfo(this._room.roomInfo)}`);
     }
     /**
      * 开启帧同步广播
      */
-    onStartFrameSync(event: MGOBE.types.BroadcastEvent<MGOBE.types.StartFrameSyncBst>) {
-        log("开始帧同步");
+    private onStartFrameSync(event: MGOBE.types.BroadcastEvent<MGOBE.types.StartFrameSyncBst>) {
         this.startButton.active = false;
-
+        this.pauseButton.active = true;
+        this.resumeButton.active = false;
         SpaceAttack.ConstValue.pause = false;
         // director.resume();
-        NotificationCenter.sendNotification(NotificationMessage.SET_PLAYER_CONTROLL, true);
-    }
-    /**
-     * 帧同步广播
-     */
-    onRecvFrame(event: MGOBE.types.BroadcastEvent<MGOBE.types.RecvFrameBst>) {
-        // log(`收到同步消息`);
     }
     /**
      * 停止帧同步广播
      */
-    onStopFrameSync(event: MGOBE.types.BroadcastEvent<MGOBE.types.StopFrameSyncBst>) {
-        log("停止帧同步");
-        this.startButton.active = this._room.roomInfo.owner == Player.id && this._room.roomInfo.maxPlayers == this._room.roomInfo.playerList.length;
-
+    private onStopFrameSync(event: MGOBE.types.BroadcastEvent<MGOBE.types.StopFrameSyncBst>) {
+        this.startButton.active = false;
+        this.pauseButton.active = false;
+        this.resumeButton.active = true;
         SpaceAttack.ConstValue.pause = true;
-        NotificationCenter.sendNotification(NotificationMessage.SET_PLAYER_CONTROLL, false);
-    }
-
-    /**
-     * 获取游戏信息
-     */
-    private getGameInfo(uid: string | undefined) {
-        if (typeof uid === 'string') {
-            NetWaitUtil.show('初始化......');
-            this._app.callFunction({
-                name: 'sign',
-                data: {
-                    openId: uid,
-                    gameId: SpaceAttack.ConstValue.mgobe_gameId
-                }
-            }).then((res) => {
-                NetWaitUtil.close();
-                const { sign, nonce, timestamp, code, msg } = res.result;
-                if (code !== 0) {
-                    error(`获取签名失败 ${code} ${msg}`);
-                } else {
-                    let mgobe_gameInfo: MGOBE.types.GameInfoPara = {
-                        openId: uid,
-                        gameId: SpaceAttack.ConstValue.mgobe_gameId,
-                        createSignature: callback => {
-                            return callback({ sign, nonce, timestamp });
-                        },
-                    }
-
-                    NetWaitUtil.show('初始化......');
-                    Listener.init(mgobe_gameInfo, SpaceAttack.ConstValue.mgobe_config, event => {
-                        NetWaitUtil.close();
-                        if (event.code === MGOBE.ErrCode.EC_OK) {
-                            log(`Listener 初始化成功 id ${Player.id} name ${Player.name}`);
-                            Listener.add(this._room);
-                            this._listenerInited = true;
-
-                            this.showRoomPanel();
-                        } else {
-                            error(`Listener 初始化失败 ${event.code} ${event.msg}`);
-                        }
-                    })
-                }
-            }).catch((res) => {
-                NetWaitUtil.close();
-                error(res);
-            })
-        } else {
-            error('uid 不存在');
-        }
     }
 
     /**
@@ -336,7 +181,6 @@ export class GameSceneUI extends Component {
         this.loginPanel.active = true;
         this.roomPanel.active = false;
         this.gamePanel.active = false;
-        this.startButton.active = false;
         this.unschedule(this.showRoomList.bind(this));
     }
 
@@ -347,23 +191,10 @@ export class GameSceneUI extends Component {
         this.loginPanel.active = false;
         this.roomPanel.active = true;
         this.gamePanel.active = false;
-        this.startButton.active = false;
 
-        NetWaitUtil.netWaitStart('获取加入房间信息......', 'getMyRoom');
-        Room.getMyRoom(event => {
-            NetWaitUtil.netWaitEnd('getMyRoom');
-            if (event.code === 0) {
-                this._room.initRoom(event.data?.roomInfo);
-                this.showGamePanel();
-                return log(`玩家已在房间内 ${event.data?.roomInfo.name}`);
-            }
-            if (event.code === 20011) {
-                this.schedule(this.showRoomList.bind(this), 1, macro.REPEAT_FOREVER, 0);
-                // this.showRoomList();
-                return;
-            }
-            return error('调用失败');
-        })
+        RoomManager.getMyRoom(this.showGamePanel.bind(this), () => {
+            this.schedule(this.showRoomList.bind(this), 1, macro.REPEAT_FOREVER, 0);
+        });
     }
 
     /**
@@ -373,12 +204,14 @@ export class GameSceneUI extends Component {
         this.loginPanel.active = false;
         this.roomPanel.active = false;
         this.gamePanel.active = true;
-        this.startButton.active = false;
+        this.startButton.active = RoomManager.room.roomInfo.owner == MGOBE.Player.id && RoomManager.room.roomInfo.maxPlayers == RoomManager.room.roomInfo.playerList.length;
+        this.pauseButton.active = false;
+        this.resumeButton.active = false;
 
         this.unschedule(this.showRoomList.bind(this));
 
-        this._room.roomInfo.playerList.forEach(player => {
-            this.gameScene.createSpacecraft(player.id);
+        RoomManager.room.roomInfo.playerList.forEach(player => {
+            this.gameScene.createSpacecraft(player.id, player.name);
         });
     }
 
@@ -386,68 +219,29 @@ export class GameSceneUI extends Component {
      * 显示房间列表
      */
     private showRoomList() {
-        let para: MGOBE.types.GetRoomListPara = {
-            pageNo: 1,
-            pageSize: 10
-        }
-        NetWaitUtil.netWaitStart('获取房间列表......', 'getRoomList');
-        Room.getRoomList(para, event => {
-            NetWaitUtil.netWaitEnd('getRoomList');
-            if (event.code === 0) {
-                let data = event.data;
-                if (data?.gameId === SpaceAttack.ConstValue.mgobe_gameId) {
-                    let children = this.roomListContent.children;
-                    children.forEach(child => {
-                        child.destroy();
-                    })
+        RoomManager.showRoomList((data: MGOBE.types.GetRoomListRsp) => {
+            let children = this.roomListContent.children;
+            children.forEach(child => {
+                child.destroy();
+            })
 
-                    for (let i = 0; i < data.roomList.length; i++) {
-                        let node = instantiate(this.roomButton);
-                        node.active = true;
-                        this.roomListContent.addChild(node);
+            for (let i = 0; i < data.roomList.length; i++) {
+                let node = instantiate(this.roomButton);
+                node.active = true;
+                this.roomListContent.addChild(node);
 
-                        const clickEventHandler = new EventHandler();
-                        clickEventHandler.target = this.node;
-                        clickEventHandler.component = 'GameSceneUI';
-                        clickEventHandler.handler = 'onClickJoinRoom';
-                        clickEventHandler.customEventData = JSON.stringify(data.roomList[i]);
+                const clickEventHandler = new EventHandler();
+                clickEventHandler.target = this.node;
+                clickEventHandler.component = 'GameSceneUI';
+                clickEventHandler.handler = 'onClickJoinRoom';
+                clickEventHandler.customEventData = JSON.stringify(data.roomList[i]);
 
-                        let button = node.getComponent(Button);
-                        button?.clickEvents.push(clickEventHandler);
-                        let label = find('Label', node)!.getComponent(Label)!;
-                        label.string = `${data.roomList[i].name}:${data.roomList[i].id}`;
-                    }
-
-                } else {
-                    error(`游戏ID错误${data?.gameId}`);
-                }
-            } else {
-                error(`获取房间列表失败${event.msg}`);
+                let button = node.getComponent(Button);
+                button?.clickEvents.push(clickEventHandler);
+                let label = find('Label', node)!.getComponent(Label)!;
+                label.string = `${data.roomList[i].name}:${data.roomList[i].id}`;
             }
         })
-    }
-
-    /**
-     * 打印房间信息
-     */
-    private logRoomInfo(roomInfo: MGOBE.types.RoomInfo): string {
-        return `
-            id: ${roomInfo.id};
-            name: ${roomInfo.name};
-            type: ${roomInfo.type};
-            createType: ${roomInfo.createType};
-            maxPlayers: ${roomInfo.maxPlayers};
-            owner: ${roomInfo.owner};
-            isPrivate: ${roomInfo.isPrivate};
-            customProperties: ${roomInfo.customProperties};
-            playerList: ${roomInfo.playerList ? roomInfo.playerList.length : 0};
-            teamList: ${roomInfo.teamList ? roomInfo.teamList.length : 0};
-            frameSyncState: ${roomInfo.frameSyncState};
-            frameRate: ${roomInfo.frameRate};
-            routeId: ${roomInfo.routeId};
-            createTime: ${roomInfo.createTime};
-            startGameTime: ${roomInfo.startGameTime};
-            isForbidJoin: ${roomInfo.isForbidJoin};`
     }
 }
 

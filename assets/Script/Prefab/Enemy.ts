@@ -1,3 +1,4 @@
+import { EnemyData } from './../Data/EnemyData';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import { BaseComponent } from './../Component/BaseComponent';
 import { Bullet } from './Bullet';
@@ -102,7 +103,7 @@ export class Enemy extends BaseComponent {
 
     }
 
-    public init() {
+    public init(data: EnemyData) {
         this.hp = 100;
         this._axisHorizontal = 0;
         this._axisVertical = 0;

@@ -194,4 +194,16 @@ export class NotificationCenter {
             }
         }
     }
+
+    /**
+     * @description: 不受暂停影响的广播
+     * @param {NotificationMessage} event
+     * @param {any} args
+     * @return {*}
+     */
+    public static broadcastNotification(event: NotificationMessage, args: any = {}) {
+        if (NotificationCenter.observers[event] != null) {
+            NotificationCenter.performSelector(NotificationCenter.observers[event], args);
+        }
+    }
 }

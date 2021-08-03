@@ -1,8 +1,12 @@
+import { SpacecraftDataParam } from './../Data/SpacecraftData';
+import { Spacecraft } from './../Prefab/Spacecraft';
 import { Bullet } from './../Prefab/Bullet';
 import { Enemy } from './../Prefab/Enemy';
 import { Tag } from './../Tools/Tag';
 import { EnemyFactory } from './../Data/EnemyFactory';
-import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard, Prefab, NodePool, Vec3, instantiate, log } from 'cc';
+import { _decorator, Component, Node, systemEvent, SystemEventType, EventKeyboard, Prefab, NodePool, Vec3, instantiate, log, Camera, find } from 'cc';
+import { EnemyData } from '../Data/EnemyData';
+import { SpacecraftData } from '../Data/SpacecraftData';
 const { ccclass, property } = _decorator;
 
 const START_POS = [new Vec3(-5, -10, 0), new Vec3(5, -10, 0)];
@@ -13,6 +17,10 @@ export class GameScene extends Component {
     spacecraft: Prefab = null!;
     @property(Prefab)
     enemy: Prefab = null!;
+    @property(Camera)
+    camera: Camera = null!;
+    @property(Prefab)
+    spacecraftName: Prefab = null!;
 
     private _enemyFactory: EnemyFactory = new EnemyFactory();
     private _startPoint = [0, 1];
@@ -31,21 +39,37 @@ export class GameScene extends Component {
                 node.getComponent(Bullet)!.bulletDead();
             }
         }
+        this._startPoint = [0, 1];
     }
 
     /**
      * 创建飞船
      */
-    public createSpacecraft(id: string) {
+    public createSpacecraft(id: string, name: string) {
         if (this.node.getChildByName(`spacecraft${id}`)) {
             log(`该玩家已经加入${id}`);
             return;
         }
-        let spacecraft = instantiate(this.spacecraft);
-        this.node.addChild(spacecraft);
-        spacecraft.setPosition(START_POS[this._startPoint[0]]);
-        spacecraft.getComponent(Tag)!.tag = this._startPoint.shift();
-        spacecraft.name = `spacecraft${id}`;
+
+        let canvas = find("Canvas");
+        if (canvas) {
+            let spacecraft = instantiate(this.spacecraft);
+            this.node.addChild(spacecraft);
+
+            let nameNode = instantiate(this.spacecraftName);
+            canvas.addChild(nameNode);
+
+            let param: SpacecraftDataParam = {
+                id: id,
+                name: name,
+                position: START_POS[this._startPoint[0]]
+            }
+            let data: SpacecraftData = new SpacecraftData(param);
+            spacecraft.getComponent(Spacecraft)!.init(data, nameNode, this.camera);
+
+            spacecraft.getComponent(Tag)!.tag = this._startPoint.shift();
+            spacecraft.name = `spacecraft${id}`;
+        }
     }
 
     /**
@@ -84,6 +108,6 @@ export class GameScene extends Component {
      * 游戏开始
      */
     public startGame() {
-        this._enemyFactory.createEnemy(this.enemy, this.node, 0);
+        this._enemyFactory.createEnemy(this.enemy, this.node, 0, new EnemyData());
     }
 }

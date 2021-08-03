@@ -1,3 +1,4 @@
+import { EnemyData } from './EnemyData';
 import { Enemy } from './../Prefab/Enemy';
 
 import { _decorator, Prefab, NodePool, instantiate, Node } from 'cc';
@@ -7,7 +8,7 @@ const { ccclass } = _decorator;
 export class EnemyFactory {
     private _enemyPool: NodePool = new NodePool('Enemy');
 
-    public createEnemy(prefab: Prefab, parent: Node, idx: number) {
+    public createEnemy(prefab: Prefab, parent: Node, idx: number, data: EnemyData) {
         let enemy = null;
         if (this._enemyPool.size() > 0) {
             enemy = this._enemyPool.get(this._enemyPool);
@@ -17,6 +18,7 @@ export class EnemyFactory {
         }
         parent.addChild(enemy!);
         enemy!.name = `enemy${idx}`;
+        enemy!.getComponent(Enemy)!.init(data);
     }
 }
 
