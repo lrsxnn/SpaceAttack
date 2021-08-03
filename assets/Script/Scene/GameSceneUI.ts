@@ -145,14 +145,23 @@ export class GameSceneUI extends Component {
      * 离开房间广播
      */
     private onLeaveRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.LeaveRoomBst>) {
-        this.startButton.active = false;
-        this.gameScene.removeSpacecraft(event.data.leavePlayerId);
+        //游戏开始后有人退出就解散房间
+        if (event.data.roomInfo.owner === MGOBE.Player.id && event.data.roomInfo.startGameTime !== 0) {
+            RoomManager.dismissRoom(() => {
+                this.gameScene.cleanScene();
+                this.showRoomPanel();
+            });
+        } else {
+            this.startButton.active = false;
+            this.gameScene.removeSpacecraft(event.data.leavePlayerId);
+        }
     }
     /**
      * 解散房间广播
      */
     private onDismissRoom(event: MGOBE.types.BroadcastEvent<MGOBE.types.DismissRoomBst>) {
         this.gameScene.cleanScene();
+        this.showRoomPanel();
     }
     /**
      * 开启帧同步广播
@@ -204,13 +213,15 @@ export class GameSceneUI extends Component {
         this.loginPanel.active = false;
         this.roomPanel.active = false;
         this.gamePanel.active = true;
-        this.startButton.active = RoomManager.room.roomInfo.owner == MGOBE.Player.id && RoomManager.room.roomInfo.maxPlayers == RoomManager.room.roomInfo.playerList.length;
-        this.pauseButton.active = false;
-        this.resumeButton.active = false;
+
+        let roomInfo = RoomManager.room.roomInfo;
+        this.startButton.active = roomInfo.owner == MGOBE.Player.id && roomInfo.maxPlayers == roomInfo.playerList.length && roomInfo.startGameTime === 0 && roomInfo.frameSyncState == 0;
+        this.pauseButton.active = !this.startButton.active && roomInfo.frameSyncState == 1;
+        this.resumeButton.active = !this.startButton.active && roomInfo.frameSyncState == 0;
 
         this.unschedule(this.showRoomList.bind(this));
 
-        RoomManager.room.roomInfo.playerList.forEach(player => {
+        roomInfo.playerList.forEach(player => {
             this.gameScene.createSpacecraft(player.id, player.name);
         });
     }

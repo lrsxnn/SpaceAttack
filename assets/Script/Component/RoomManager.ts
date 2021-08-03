@@ -51,6 +51,19 @@ export class RoomManager {
         })
     }
 
+    public static dismissRoom(dismissRoomCallBack: Function) {
+        NetWaitUtil.netWaitStart('解散房间......', 'dismissRoom');
+        this._room.dismissRoom({}, event => {
+            NetWaitUtil.netWaitEnd('dismissRoom');
+            if (event.code === 0) {
+                log('解散房间成功');
+                dismissRoomCallBack();
+            } else {
+                error(`解散房间失败 ${event.code} ${event.msg}`);
+            }
+        })
+    }
+
     /**
      * 获取游戏信息
      */
@@ -146,7 +159,7 @@ export class RoomManager {
             NotificationCenter.broadcastNotification(NotificationMessage.BROADCAST_ROOM_STARTFRAMESYNC, event);
         };
         this._room.onRecvFrame = event => {
-            // log(`收到同步消息`);
+            log(`收到同步消息`);
             NotificationCenter.broadcastNotification(NotificationMessage.BROADCAST_ROOM_RECVFRAME, event);
         };
         this._room.onStopFrameSync = event => {
