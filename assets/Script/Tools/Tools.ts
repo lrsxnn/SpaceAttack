@@ -203,6 +203,8 @@ export namespace SpaceAttack {
                 NotificationCenter.cleanPauseList();
             }
         }
+
+        public static isSingleMode = false;
     }
 
     export class SysTools {

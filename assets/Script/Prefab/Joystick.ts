@@ -1,3 +1,5 @@
+import { FrameMessage } from './../Notification/NotificationMessage';
+import { RoomFrame, RoomManager } from './../Component/RoomManager';
 import { BaseComponent } from './../Component/BaseComponent';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 
@@ -34,12 +36,14 @@ export class Joystick extends BaseComponent {
         this.midNode.setPosition(this._pos);
         // let angle = math.toDegree(Math.atan2(pos.y, pos.x));
 
-        NotificationCenter.sendNotification(NotificationMessage.JOYSTICK_MOVE, this._pos);
+        // NotificationCenter.sendNotification(NotificationMessage.JOYSTICK_MOVE, this._pos);
+        RoomManager.sendFrame(new RoomFrame(FrameMessage.JOYSTICK_MOVE, this._pos));
     }
 
     onTouchEnd(event: EventTouch) {
         this.midNode.setPosition(Vec3.ZERO);
-        NotificationCenter.sendNotification(NotificationMessage.JOYSTICK_MOVE, Vec3.ZERO);
+        // NotificationCenter.sendNotification(NotificationMessage.JOYSTICK_MOVE, Vec3.ZERO);
+        RoomManager.sendFrame(new RoomFrame(FrameMessage.JOYSTICK_MOVE, Vec3.ZERO));
     }
 
     onPauseEnter() {

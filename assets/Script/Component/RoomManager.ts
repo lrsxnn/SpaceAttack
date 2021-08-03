@@ -1,3 +1,4 @@
+import { FrameMessage } from './../Notification/NotificationMessage';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import adapter from '../Plugin/cloudbaseAdapter';
 import cloudbase from '../Plugin/cloudbase.js'
@@ -224,6 +225,13 @@ export class RoomManager {
         })
     }
 
+    public static sendFrame(data: RoomFrame) {
+        let sendFramePara: MGOBE.types.SendFramePara = {
+            data: data,
+        }
+        this._room.sendFrame(sendFramePara);
+    }
+
     public static showRoomList(callBack: Function) {
         let para: MGOBE.types.GetRoomListPara = {
             pageNo: 1,
@@ -266,13 +274,11 @@ export class RoomManager {
     }
 }
 
-/**
- * [1] Class member could be defined like this.
- * [2] Use `property` decorator if your want the member to be serializable.
- * [3] Your initialization goes here.
- * [4] Your update function goes here.
- *
- * Learn more about scripting: https://docs.cocos.com/creator/3.0/manual/en/scripting/
- * Learn more about CCClass: https://docs.cocos.com/creator/3.0/manual/en/scripting/ccclass.html
- * Learn more about life-cycle callbacks: https://docs.cocos.com/creator/3.0/manual/en/scripting/life-cycle-callbacks.html
- */
+export class RoomFrame {
+    public readonly message: FrameMessage;
+    public readonly args: any;
+    constructor(message: FrameMessage, args: any = {}) {
+        this.message = message;
+        this.args = args;
+    }
+}
