@@ -1,3 +1,5 @@
+import { DecimalVec2 } from './../Plugin/DecimalVec2';
+import { DecimalVec3 } from './../Plugin/DecimalVec3';
 import { BulletBaseDataParam, BULLET_MOVE_TYPE, BULLET_COLLIDER_TYPE, BulletData } from './../Data/BulletData';
 import { BulletFactory } from './../Data/BulletFactory';
 import { GameScene } from './../Scene/GameScene';
@@ -6,6 +8,7 @@ import { NotificationMessage } from './../Notification/NotificationMessage';
 import { SpaceAttack } from '../Tools/Tools';
 
 import { _decorator, Component, Node, NodePool, Vec2, Vec3, Prefab, Mesh } from 'cc';
+import Decimal from '../Plugin/decimal.js';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletManager')
@@ -34,16 +37,18 @@ export class BulletManager extends Component {
     private _spacecraftBulletPool: NodePool = new NodePool('Bullet');
 
     enemyFire(startPosition: Vec3) {
+        let startPos = new DecimalVec3(startPosition);
         for (let i = 0; i < 8; i++) {
-            let input = new Vec2(Math.sin(i / 8 * 2 * Math.PI), Math.cos(i / 8 * 2 * Math.PI));
-            input = SpaceAttack.UnityVec2.clampMagnitude(input, 1);
+            let angle = new Decimal(i).div(8).mul(2).mul(Math.PI);
+            let input = new DecimalVec2(Decimal.sin(angle), Decimal.cos(angle));
+            input = SpaceAttack.UnityVec2.clampMagnitudeDecimal(input, 1);
 
             let param: BulletBaseDataParam = {
                 moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
                 colliderType: BULLET_COLLIDER_TYPE.SPHERE,
-                position: startPosition,
-                angle: i / 8 * 360,
-                inputDirection: new Vec3(input.x, input.y, 0),
+                position: startPos,
+                angle: new Decimal(i).div(8).mul(360),
+                inputDirection: new DecimalVec3(input.x, input.y, 0),
                 speed: SpaceAttack.ConstValue.baseSpeed,
             };
             let data = new BulletData(param);
@@ -66,63 +71,65 @@ export class BulletManager extends Component {
     }
 
     spacecraftFireStraighLine(startPosition: Vec3) {
-        let _startPos = new Vec3();
+        let _startPos = new DecimalVec3();
         //直线圆弹
-        Vec3.add(_startPos, startPosition, new Vec3(-0.5, 0, 0))
+        DecimalVec3.add(_startPos, startPosition, new DecimalVec3(-0.5, 0, 0));
         let param: BulletBaseDataParam = {
             moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
             colliderType: BULLET_COLLIDER_TYPE.SPHERE,
             position: _startPos,
             angle: 0,
-            inputDirection: Vec3.UP,
-            speed: SpaceAttack.ConstValue.baseSpeed * 3,
+            inputDirection: DecimalVec3.UP,
+            speed: SpaceAttack.ConstValue.baseSpeed.mul(3),
         };
         let data = new BulletData(param);
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
 
-        Vec3.add(_startPos, startPosition, new Vec3(0.5, 0, 0))
+        DecimalVec3.add(_startPos, startPosition, new DecimalVec3(0.5, 0, 0));
         param = {
             moveType: BULLET_MOVE_TYPE.STRAIGHTLINE,
             colliderType: BULLET_COLLIDER_TYPE.SPHERE,
             position: _startPos,
             angle: 0,
-            inputDirection: Vec3.UP,
-            speed: SpaceAttack.ConstValue.baseSpeed * 3,
+            inputDirection: DecimalVec3.UP,
+            speed: SpaceAttack.ConstValue.baseSpeed.mul(3),
         };
         data = new BulletData(param);
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftSphere, data);
     }
 
     spacecraftFireTracking(startPosition: Vec3) {
-        let _startPos = new Vec3();
+        let _startPos = new DecimalVec3();
         //追踪弹
         let target = this._gameScene.getNearestEnemy(startPosition);
 
-        let direction = new Vec2(Math.sin(1 / 8 * 2 * Math.PI), Math.cos(1 / 8 * 2 * Math.PI));
-        direction = SpaceAttack.UnityVec2.clampMagnitude(direction, 1);
-        Vec3.add(_startPos, startPosition, new Vec3(0.5, 0, 0))
+        let angle = new Decimal(1).div(8).mul(2).mul(Math.PI);
+        let direction = new DecimalVec2(Decimal.sin(angle), Decimal.cos(angle));
+        direction = SpaceAttack.UnityVec2.clampMagnitudeDecimal(direction, 1);
+        DecimalVec3.add(_startPos, startPosition, new DecimalVec3(0.5, 0, 0));
         let param: BulletBaseDataParam = {
             moveType: BULLET_MOVE_TYPE.TRACKING,
             colliderType: BULLET_COLLIDER_TYPE.CONE,
             position: _startPos,
             angle: 45,
-            inputDirection: new Vec3(direction.x, direction.y, 0),
-            speed: SpaceAttack.ConstValue.baseSpeed * 3,
+            inputDirection: new DecimalVec3(direction.x, direction.y, 0),
+            speed: SpaceAttack.ConstValue.baseSpeed.mul(3),
         };
         let data = new BulletData(param);
         data.setTrackingData(0.1, target);
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCone, data);
 
-        direction = new Vec2(Math.sin(7 / 8 * 2 * Math.PI), Math.cos(7 / 8 * 2 * Math.PI));
-        direction = SpaceAttack.UnityVec2.clampMagnitude(direction, 1);
-        Vec3.add(_startPos, startPosition, new Vec3(-0.5, 0, 0))
+        angle = new Decimal(7).div(8).mul(2).mul(Math.PI);
+        direction = new DecimalVec2(Decimal.sin(angle), Decimal.cos(angle));
+        direction = SpaceAttack.UnityVec2.clampMagnitudeDecimal(direction, 1);
+        DecimalVec3.add(_startPos, startPosition, new DecimalVec3(-0.5, 0, 0));
         param = {
             moveType: BULLET_MOVE_TYPE.TRACKING,
             colliderType: BULLET_COLLIDER_TYPE.CONE,
             position: _startPos,
             angle: 315,
-            inputDirection: new Vec3(direction.x, direction.y, 0),
-            speed: SpaceAttack.ConstValue.baseSpeed * 3,
+            inputDirection: new DecimalVec3(direction.x, direction.y, 0),
+            speed: SpaceAttack.ConstValue.baseSpeed.mul(3),
         };
         data = new BulletData(param);
         data.setTrackingData(0.1, target);
@@ -130,33 +137,33 @@ export class BulletManager extends Component {
     }
 
     spacecraftFireLaser(followNode: Node) {
-        let height = SpaceAttack.ConstValue.allowedArea.yMax - SpaceAttack.ConstValue.allowedArea.yMin;
+        let height = new Decimal(SpaceAttack.ConstValue.allowedArea.yMax).sub(SpaceAttack.ConstValue.allowedArea.yMin);
         //激光
         let param: BulletBaseDataParam = {
-            moveType: BULLET_MOVE_TYPE.TRACKING,
+            moveType: BULLET_MOVE_TYPE.LASER,
             colliderType: BULLET_COLLIDER_TYPE.CYLINDER,
-            position: Vec3.ZERO,
+            position: DecimalVec3.ZERO,
             angle: 0,
-            inputDirection: Vec3.UP,
+            inputDirection: DecimalVec3.UP,
             radius: 0.25,
             height: height,
         };
         let data = new BulletData(param);
-        data.setLaserData(0.1, followNode, new Vec3(-2, height, 0), 1);
+        data.setLaserData(0, followNode, new DecimalVec3(-2, height, 0), 3);
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCylinder, data);
 
         param = {
-            moveType: BULLET_MOVE_TYPE.TRACKING,
+            moveType: BULLET_MOVE_TYPE.LASER,
             colliderType: BULLET_COLLIDER_TYPE.CYLINDER,
-            position: Vec3.ZERO,
+            position: DecimalVec3.ZERO,
             angle: 0,
-            inputDirection: Vec3.UP,
+            inputDirection: DecimalVec3.UP,
             radius: 0.25,
             height: height,
-            lifeTime: 1,
+            lifeTime: 3,
         };
         data = new BulletData(param);
-        data.setLaserData(0.1, followNode, new Vec3(2, height, 0));
+        data.setLaserData(0, followNode, new DecimalVec3(2, height, 0));
         this._bulletFactory.createBullet(this.spacecraftBullet, this._spacecraftBulletPool, this.node, this.spacecraftCylinder, data);
     }
 

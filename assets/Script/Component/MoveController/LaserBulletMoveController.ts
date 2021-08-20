@@ -1,5 +1,7 @@
+import { DecimalVec3 } from './../../Plugin/DecimalVec3';
 
 import { _decorator, Vec3 } from 'cc';
+import Decimal from '../../Plugin/decimal.js';
 import { BulletMoveController } from './BulletMoveController';
 const { ccclass } = _decorator;
 
@@ -14,9 +16,9 @@ export class LaserBulletMoveController extends BulletMoveController {
     /**
      * 移动
      */
-    protected moveAction(dt: number) {
+    protected moveAction(dt: Decimal) {
         if (this._bullet.data.followNode != null && this._bullet.data.followPosition != null) {//跟随目标
-            Vec3.add(this._bullet.data.position, this._bullet.data.followNode.position.clone(), this._bullet.data.followPosition);
+            DecimalVec3.add(this._bullet.data.position, this._bullet.data.followNode.position, this._bullet.data.followPosition);
         }
     }
 }

@@ -1,18 +1,21 @@
-import { NotificationMessage } from './../Notification/NotificationMessage';
-import { NotificationCenter } from './../Notification/NotificationCenter';
-import { Spacecraft } from './../Prefab/Spacecraft';
-import { BaseComponent } from './BaseComponent';
+import { DecimalVec3 } from '../../Plugin/DecimalVec3';
+import { NotificationMessage } from '../../Notification/NotificationMessage';
+import { NotificationCenter } from '../../Notification/NotificationCenter';
+import { Spacecraft } from '../../Prefab/Spacecraft';
+import { BaseComponent } from '../BaseComponent';
 
 import { _decorator, Vec2, Vec3 } from 'cc';
-import { SpaceAttack } from '../Tools/Tools';
+import { SpaceAttack } from '../../Tools/Tools';
 const { ccclass } = _decorator;
 
 @ccclass('SpacecraftMoveController')
 export class SpacecraftMoveController extends BaseComponent {
     private _spacecraft: Spacecraft = null!;
-    private _desiredVelocity: Vec3 = new Vec3();
+    private _desiredVelocity: DecimalVec3 = new DecimalVec3();
 
     onLoad() {
+        this._spacecraft = this.node.getComponent(Spacecraft)!;
+
         NotificationCenter.addObserver(this, this.moveAction, NotificationMessage.SPACECRAFT_MOVE);
     }
 
@@ -21,36 +24,34 @@ export class SpacecraftMoveController extends BaseComponent {
     }
 
     onFixedUpdate() {
-        this.node.setScale(this._spacecraft.data.scale);
-        this.node.setRotation(this._spacecraft.data.rotation);
-        this.node.setPosition(this._spacecraft.data.position);
+        this.node.setScale(this._spacecraft.data.scale.toVec3());
+        this.node.setRotation(this._spacecraft.data.rotation.toQuat());
+        this.node.setPosition(this._spacecraft.data.position.toVec3());
     }
 
     public init() {
-        this._spacecraft = this.node.getComponent(Spacecraft)!;
-
-        this.node.setScale(this._spacecraft.data.scale);
-        this.node.setPosition(this._spacecraft.data.position);
-        this.node.setRotation(this._spacecraft.data.rotation);
+        this.node.setScale(this._spacecraft.data.scale.toVec3());
+        this.node.setPosition(this._spacecraft.data.position.toVec3());
+        this.node.setRotation(this._spacecraft.data.rotation.toQuat());
     }
 
     private moveAction(data: { id: string, playerInput: Vec2 }) {
         if (data.id === this._spacecraft.data.id) {
-            this._spacecraft.data.position = this.node.position.clone();
+            this._spacecraft.data.position.set(this.node.position);
 
             this._desiredVelocity.set(data.playerInput.x, data.playerInput.y, 0);
             this._desiredVelocity.multiplyScalar(this._spacecraft.data.speed);
 
             this._spacecraft.data.position.add(this._desiredVelocity);
 
-            if (this._spacecraft.data.position.x < SpaceAttack.ConstValue.allowedArea.xMin) {
+            if (this._spacecraft.data.position.x.lessThan(SpaceAttack.ConstValue.allowedArea.xMin)) {
                 this._spacecraft.data.position.x = SpaceAttack.ConstValue.allowedArea.xMin;
-            } else if (this._spacecraft.data.position.x > SpaceAttack.ConstValue.allowedArea.xMax) {
+            } else if (this._spacecraft.data.position.x.greaterThan(SpaceAttack.ConstValue.allowedArea.xMax)) {
                 this._spacecraft.data.position.x = SpaceAttack.ConstValue.allowedArea.xMax;
             }
-            if (this._spacecraft.data.position.y < SpaceAttack.ConstValue.allowedArea.yMin) {
+            if (this._spacecraft.data.position.y.lessThan(SpaceAttack.ConstValue.allowedArea.yMin)) {
                 this._spacecraft.data.position.y = SpaceAttack.ConstValue.allowedArea.yMin;
-            } else if (this._spacecraft.data.position.y > SpaceAttack.ConstValue.allowedArea.yMax) {
+            } else if (this._spacecraft.data.position.y.greaterThan(SpaceAttack.ConstValue.allowedArea.yMax)) {
                 this._spacecraft.data.position.y = SpaceAttack.ConstValue.allowedArea.yMax;
             }
         }

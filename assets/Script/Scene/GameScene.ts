@@ -1,3 +1,4 @@
+import { EnemyDataParam } from './../Data/EnemyData';
 import { SpacecraftDataParam } from './../Data/SpacecraftData';
 import { Spacecraft } from './../Prefab/Spacecraft';
 import { Bullet } from './../Prefab/Bullet';
@@ -108,6 +109,14 @@ export class GameScene extends Component {
      * 游戏开始
      */
     public startGame() {
-        this._enemyFactory.createEnemy(this.enemy, this.node, 0, new EnemyData());
+        let param: EnemyDataParam = {};
+        this._enemyFactory.createEnemy(this.enemy, this.node, 0, new EnemyData(param));
+    }
+
+    public setSpacecraftPosition(id: string, pos: Vec3) {
+        let spacecraft = this.node.getChildByName(`spacecraft${id}`);
+        if (spacecraft) {
+            spacecraft.position = pos;
+        }
     }
 }

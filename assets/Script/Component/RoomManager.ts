@@ -6,6 +6,7 @@ import { _decorator, log, error } from 'cc';
 import NetWaitUtil from '../Tools/NetWaitUtil';
 import { SpaceAttack } from '../Tools/Tools';
 import { NotificationMessage } from '../Notification/NotificationMessage';
+import Decimal from '../Plugin/decimal.js';
 const { ccclass } = _decorator;
 
 @ccclass('RoomManager')
@@ -160,6 +161,10 @@ export class RoomManager {
         };
         this._room.onRecvFrame = event => {
             log(`收到同步消息`);
+            if (SpaceAttack.ConstValue.randomSeed != event.data.frame.ext.seed) {
+                SpaceAttack.ConstValue.randomSeed = event.data.frame.ext.seed;
+                SpaceAttack.ConstValue.randomSeedDecimal = new Decimal(event.data.frame.ext.seed);
+            }
             NotificationCenter.broadcastNotification(NotificationMessage.BROADCAST_ROOM_RECVFRAME, event);
         };
         this._room.onStopFrameSync = event => {

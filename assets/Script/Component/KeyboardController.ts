@@ -1,8 +1,10 @@
-import { NotificationMessage } from './../Notification/NotificationMessage';
+import { NotificationMessage, FrameMessage } from './../Notification/NotificationMessage';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import { BaseComponent } from './BaseComponent';
 
 import { _decorator, Vec3, systemEvent, SystemEventType, EventKeyboard, macro } from 'cc';
+import { SpaceAttack } from '../Tools/Tools';
+import { RoomFrame, RoomManager } from './RoomManager';
 const { ccclass } = _decorator;
 
 @ccclass('KeyboardController')
@@ -14,6 +16,7 @@ export class KeyboardController extends BaseComponent {
     private _spaceDown: boolean = false;
 
     private _pos: Vec3 = new Vec3();
+    
     onFixedUpdate() {
         if (this._sDown) {
             this._pos.y -= 0.05;
@@ -43,7 +46,11 @@ export class KeyboardController extends BaseComponent {
             this._pos.x = 0;
         }
 
-        NotificationCenter.sendNotification(NotificationMessage.KEYBOARD_MOVE, { spaceDown: this._spaceDown, playerInput: this._pos });
+        if (SpaceAttack.ConstValue.isSingleMode) {
+            NotificationCenter.sendNotification(NotificationMessage.KEYBOARD_MOVE, { spaceDown: this._spaceDown, playerInput: this._pos });
+        } else {
+            RoomManager.sendFrame(new RoomFrame(FrameMessage.KEYBOARD_MOVE, { spaceDown: this._spaceDown, playerInput: this._pos }));
+        }
     }
 
     onPauseEnter() {
@@ -52,8 +59,8 @@ export class KeyboardController extends BaseComponent {
     }
 
     onPauseExit() {
-        systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDown, this);
-        systemEvent.off(SystemEventType.KEY_UP, this.onKeyUp, this);
+        systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDown, this);
+        systemEvent.on(SystemEventType.KEY_UP, this.onKeyUp, this);
     }
 
     onKeyDown(event: EventKeyboard) {

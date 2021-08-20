@@ -1,7 +1,8 @@
+import Decimal from '../Plugin/decimal.js';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 import { RoomManager } from './../Component/RoomManager';
 import { GameScene } from './GameScene';
-import { _decorator, Component, Node, Label, EditBox, instantiate, Button, EventHandler, find, macro } from 'cc';
+import { _decorator, Component, Node, Label, EditBox, instantiate, Button, EventHandler, find, macro, Vec3, error } from 'cc';
 import { SpaceAttack } from '../Tools/Tools';
 import PromptBoxUtil from '../Tools/PromptBoxUtil';
 import { NotificationMessage } from '../Notification/NotificationMessage';
@@ -25,6 +26,8 @@ export class GameSceneUI extends Component {
     resumeButton: Node = null!;
     @property(Node)
     joinButton: Node = null!;
+    @property(Node)
+    leaveButton: Node = null!;
 
     @property(Node)
     roomListContent: Node = null!;
@@ -42,8 +45,12 @@ export class GameSceneUI extends Component {
         NotificationCenter.addObserver(this, this.onStartFrameSync, NotificationMessage.BROADCAST_ROOM_STARTFRAMESYNC);
         NotificationCenter.addObserver(this, this.onStopFrameSync, NotificationMessage.BROADCAST_ROOM_STOPFRAMESYNC);
 
-        RoomManager.init();
-        this.showLoginPanel();
+        if (SpaceAttack.ConstValue.isSingleMode) {
+            this.startSingleMode();
+        } else {
+            RoomManager.init();
+            this.showLoginPanel();
+        }
     }
 
     onDestroy() {
@@ -104,27 +111,47 @@ export class GameSceneUI extends Component {
      * 点击暂停
      */
     onClickPause() {
-        // SpaceAttack.ConstValue.pause = true;
         // // director.pause();
         // // game.pause();
-        RoomManager.stopFrameSync();
+        if (SpaceAttack.ConstValue.isSingleMode) {
+            this.startButton.active = false;
+            this.pauseButton.active = false;
+            this.resumeButton.active = true;
+            SpaceAttack.ConstValue.pause = true;
+        } else {
+            RoomManager.stopFrameSync();
+        }
     }
 
     /**
      * 点击恢复
      */
     onClickResume() {
-        // SpaceAttack.ConstValue.pause = false;
         // // director.resume();
         // // game.resume();
-        RoomManager.startFrameSync();
+        if (SpaceAttack.ConstValue.isSingleMode) {
+            this.startButton.active = false;
+            this.pauseButton.active = true;
+            this.resumeButton.active = false;
+            SpaceAttack.ConstValue.pause = false;
+        } else {
+            RoomManager.startFrameSync();
+        }
     }
 
     /**
      * 点击开始
      */
     onClickStart() {
-        RoomManager.startFrameSync();
+        if (SpaceAttack.ConstValue.isSingleMode) {
+            this.startButton.active = false;
+            this.pauseButton.active = true;
+            this.resumeButton.active = false;
+            SpaceAttack.ConstValue.pause = false;
+            this.gameScene.startGame();
+        } else {
+            RoomManager.startFrameSync();
+        }
     }
 
     /**
@@ -253,6 +280,20 @@ export class GameSceneUI extends Component {
                 label.string = `${data.roomList[i].name}:${data.roomList[i].id}`;
             }
         })
+    }
+
+    private startSingleMode() {
+        this.loginPanel.active = false;
+        this.roomPanel.active = false;
+        this.gamePanel.active = true;
+
+        this.startButton.active = true;
+        this.pauseButton.active = false;
+        this.resumeButton.active = false;
+        this.leaveButton.active = false;
+
+        this.gameScene.createSpacecraft("0", "Player");
+        this.gameScene.setSpacecraftPosition("0", new Vec3(0, -10, 0));
     }
 }
 

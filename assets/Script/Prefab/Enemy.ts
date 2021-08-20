@@ -1,43 +1,33 @@
+import { EnemyMoveController } from './../Component/MoveController/EnemyMoveController';
 import { EnemyData } from './../Data/EnemyData';
 import { NotificationCenter } from './../Notification/NotificationCenter';
-import { BaseComponent } from './../Component/BaseComponent';
 import { Bullet } from './Bullet';
 import { NotificationMessage } from './../Notification/NotificationMessage';
 
-import { _decorator, Vec2, Vec3, BoxCollider, ITriggerEvent, NodePool } from 'cc';
-import { BulletEd } from '../Data/BulletData';
+import { _decorator, ITriggerEvent } from 'cc';
 import { SpaceAttack } from '../Tools/Tools';
+import Decimal from '../Plugin/decimal.js';
+import { FlyNode } from '../Component/FlyNode';
 const { ccclass, property } = _decorator;
 
 @ccclass('Enemy')
-export class Enemy extends BaseComponent {
-    @property
-    speed = 0.02;
-    @property
-    damage = 1;
-    @property
-    hp = 100;
-
-    private _axisHorizontal = 0;
-    private _axisVertical = 0;
-
-    private _playerInput: Vec2 = new Vec2();
-    private _desiredVelocity: Vec3 = new Vec3();
-    private _lastPos: Vec3 = new Vec3();
-
-    private _changePos = true;
-    private _changePosTime = 0;
-
-    private _enemyPool: NodePool = null!;
-
-    onPauseExit() {
-        this.node.getComponent(BoxCollider)!.on('onTriggerEnter', this.onTriggerStay, this);
-        this.node.getComponent(BoxCollider)!.on('onTriggerStay', this.onTriggerStay, this);
+export class Enemy extends FlyNode {
+    private _data: EnemyData = null!;
+    public get data(): EnemyData {
+        return this._data;
     }
 
-    onPauseEnter() {
-        this.node.getComponent(BoxCollider)!.off('onTriggerEnter', this.onTriggerStay, this);
-        this.node.getComponent(BoxCollider)!.off('onTriggerStay', this.onTriggerStay, this);
+    public get damage(): Decimal {
+        return this._data.damage;
+    }
+
+    protected _controller: EnemyMoveController = null!;
+
+    onLoad() {
+        if (!SpaceAttack.ConstValue.pause) {
+            this.onPauseExit();
+        }
+        this._controller = this.node.getComponent(EnemyMoveController)!;
     }
 
     start() {
@@ -48,75 +38,23 @@ export class Enemy extends BaseComponent {
         // NotificationCenter.sendNotification(NotificationMessage.ENEMY_FIRE, this.node.position.clone());
     }
 
-    onFixedUpdate() {
-        this._changePosTime += this._fixedTimeStep;
-        if (this._changePosTime > 2) {
-            this._changePosTime -= 2;
-            this._changePos = true;
-        }
-
-        if (this._changePos) {
-            this._axisHorizontal = SpaceAttack.Utils.getRandomIntInclusive(-1, 1);
-            this._axisVertical = SpaceAttack.Utils.getRandomIntInclusive(-1, 1);
-            this._changePos = false;
-        }
-
-        this._playerInput.set(this._axisHorizontal, this._axisVertical);
-        this._playerInput = SpaceAttack.UnityVec2.clampMagnitude(this._playerInput, 1);
-
-        this._desiredVelocity.set(this._playerInput.x, this._playerInput.y, 0);
-        this._desiredVelocity.multiplyScalar(this.speed);
-
-        this._lastPos = this.node.position.clone();
-        this._lastPos.add(this._desiredVelocity);
-
-        if (this._lastPos.x < SpaceAttack.ConstValue.allowedArea.xMin) {
-            this._lastPos.x = SpaceAttack.ConstValue.allowedArea.xMin;
-        } else if (this._lastPos.x > SpaceAttack.ConstValue.allowedArea.xMax) {
-            this._lastPos.x = SpaceAttack.ConstValue.allowedArea.xMax;
-        }
-        if (this._lastPos.y < SpaceAttack.ConstValue.allowedArea.yMin) {
-            this._lastPos.y = SpaceAttack.ConstValue.allowedArea.yMin;
-        } else if (this._lastPos.y > SpaceAttack.ConstValue.allowedArea.yMax) {
-            this._lastPos.y = SpaceAttack.ConstValue.allowedArea.yMax;
-        }
-        this.node.setPosition(this._lastPos);
+    protected onTriggerEnter(event: ITriggerEvent) {
+        this.onTriggerStay(event);
     }
-
-    onTriggerStay(event: ITriggerEvent) {
+    protected onTriggerStay(event: ITriggerEvent) {
         let node = event.otherCollider.node;
         let bullet = node.getComponent(Bullet)
         if (bullet) {
-            this.hp -= bullet.damage;
+            this._data.hp = this._data.hp.sub(bullet.damage);
         }
-
-        if (this.hp <= 0) {
-            this.enemyDead();
+        if (this._data.hp.lessThanOrEqualTo(0)) {
+            this.dead();
         }
-    }
-
-    reuse(arg: any) {
-        this.setPool(arg[0]);
-    }
-
-    unuse() {
-
     }
 
     public init(data: EnemyData) {
-        this.hp = 100;
-        this._axisHorizontal = 0;
-        this._axisVertical = 0;
-        this._changePos = true;
-        this._changePosTime = 0;
-    }
-
-    public setPool(enemyPool: NodePool) {
-        this._enemyPool = enemyPool;
-    }
-
-    public enemyDead() {
-        this._enemyPool.put(this.node);
+        this._data = data;
+        this._controller.init();
     }
 }
 

@@ -1,7 +1,9 @@
+import { DecimalVec3 } from './../../Plugin/DecimalVec3';
 import { BulletMoveController } from './BulletMoveController';
 
 import { _decorator, Vec3 } from 'cc';
 import { SpaceAttack } from '../../Tools/Tools';
+import Decimal from '../../Plugin/decimal.js';
 const { ccclass } = _decorator;
 
 @ccclass('StraightLineBulletMoveController')
@@ -15,13 +17,13 @@ export class StraightLineBulletMoveController extends BulletMoveController {
     /**
      * 移动
      */
-    protected moveAction(dt: number) {
-        Vec3.multiplyScalar(this._desiredVelocity, this._bullet.data.inputDirection, this._bullet.data.speed);
-        let maxSpeedChange = this._bullet.data.acceleration * dt;
-        this._bullet.data.velocity.x = SpaceAttack.UnityMathf.moveTowards(this._bullet.data.velocity.x, this._desiredVelocity.x, maxSpeedChange);
-        this._bullet.data.velocity.y = SpaceAttack.UnityMathf.moveTowards(this._bullet.data.velocity.y, this._desiredVelocity.y, maxSpeedChange);
+    protected moveAction(dt: Decimal) {
+        DecimalVec3.multiplyScalar(this._desiredVelocity, this._bullet.data.inputDirection, this._bullet.data.speed);
+        let maxSpeedChange = this._bullet.data.acceleration.mul(dt);
+        this._bullet.data.velocity.x = SpaceAttack.UnityMathf.moveTowardsDecimal(this._bullet.data.velocity.x, this._desiredVelocity.x, maxSpeedChange);
+        this._bullet.data.velocity.y = SpaceAttack.UnityMathf.moveTowardsDecimal(this._bullet.data.velocity.y, this._desiredVelocity.y, maxSpeedChange);
 
-        Vec3.multiplyScalar(this._desiredVelocity, this._bullet.data.velocity, dt);
+        DecimalVec3.multiplyScalar(this._desiredVelocity, this._bullet.data.velocity, dt);
         this._bullet.data.position.add(this._desiredVelocity);
     }
 }

@@ -1,12 +1,12 @@
-import { RotaryStarBulletMoveController } from './../Component/BulletMoveController/RotaryStarBulletMoveController';
-import { LaserBulletMoveController } from './../Component/BulletMoveController/LaserBulletMoveController';
-import { TrackingBulletMoveController } from './../Component/BulletMoveController/TrackingBulletMoveController';
-import { StraightLineBulletMoveController } from './../Component/BulletMoveController/StraightLineBulletMoveController';
+import { RotaryStarBulletMoveController } from './../Component/MoveController/RotaryStarBulletMoveController';
+import { LaserBulletMoveController } from './../Component/MoveController/LaserBulletMoveController';
+import { TrackingBulletMoveController } from './../Component/MoveController/TrackingBulletMoveController';
+import { StraightLineBulletMoveController } from './../Component/MoveController/StraightLineBulletMoveController';
 import { BulletData, BULLET_MOVE_TYPE, BULLET_COLLIDER_TYPE } from './BulletData';
 import { Bullet } from './../Prefab/Bullet';
 import { Node, Prefab, NodePool, instantiate, Mesh, MeshRenderer, Collider, SphereCollider, ConeCollider, CylinderCollider } from 'cc';
-import { BulletMoveController } from '../Component/BulletMoveController/BulletMoveController';
-
+import { BulletMoveController } from '../Component/MoveController/BulletMoveController';
+let i = 0;
 export class BulletFactory {
     /**
      * 创建子弹
@@ -23,7 +23,8 @@ export class BulletFactory {
             bullet!.getComponent(Bullet)!.setPool(pool);
         }
         parent.addChild(bullet!);
-        bullet!.name = "bullet";
+        bullet!.name = "bullet"+i;
+        i++
 
         //必须先设置父节点再更改mesh
         bullet!.getComponent(MeshRenderer)!.mesh = mesh;

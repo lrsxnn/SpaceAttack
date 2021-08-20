@@ -7645,6 +7645,9 @@
     "joinButton": {
       "__id__": 200
     },
+    "leaveButton": {
+      "__id__": 151
+    },
     "roomListContent": {
       "__id__": 226
     },

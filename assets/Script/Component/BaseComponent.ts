@@ -1,3 +1,4 @@
+import Decimal from '../Plugin/decimal.js';
 
 import { _decorator, Component } from 'cc';
 import { SpaceAttack } from '../Tools/Tools';
@@ -5,8 +6,8 @@ const { ccclass } = _decorator;
 
 @ccclass('BaseComponent')
 export class BaseComponent extends Component {
-    protected _fixedTimeStep: number = 0.02;
-    protected _lastTime: number = 0;
+    protected readonly _fixedTimeStep: Decimal = new Decimal(1).div(30);
+    protected _lastTime: Decimal = new Decimal(0);
 
     private _isPaused: boolean = false;
 
@@ -21,12 +22,12 @@ export class BaseComponent extends Component {
                 this.onPauseExit();
             }
 
-            this._lastTime += dt;
-            let fixedTime = this._lastTime / this._fixedTimeStep;
-            for (let i = 0; i < fixedTime; i++) {
+            this._lastTime = this._lastTime.add(dt);
+            let fixedTime = this._lastTime.div(this._fixedTimeStep);
+            for (let i = 0; i < fixedTime.toNumber(); i++) {
                 this.onFixedUpdate();
             }
-            this._lastTime = this._lastTime % this._fixedTimeStep;
+            this._lastTime = this._lastTime.mod(this._fixedTimeStep);
 
             this.onUpdate(dt);
         } else {

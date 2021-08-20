@@ -1,17 +1,35 @@
+import { DecimalRect } from './../Plugin/DecimalRect';
+import { DecimalVec2 } from './../Plugin/DecimalVec2';
 import { NotificationCenter } from './../Notification/NotificationCenter';
 
 import { Vec2, _decorator, Rect, Vec3, error, sys, Node, UITransform, log, Size } from 'cc';
+import Decimal from '../Plugin/decimal.js';
 
 export namespace SpaceAttack {
     export class UnityMathf {
         /**
-             * Unity Mathf.MoveTowards
-             */
+         * Unity Mathf.MoveTowards
+         */
         public static moveTowards(current: number, target: number, maxDelta: number): number {
             if (Math.abs(target - current) <= maxDelta) {
                 return target;
             }
             return current + Math.sign(target - current) * maxDelta;
+        }
+        public static moveTowardsDecimal(current: Decimal | number, target: Decimal | number, maxDelta: Decimal | number): Decimal {
+            if (typeof current === "number") {
+                current = new Decimal(current);
+            }
+            if (typeof target === "number") {
+                target = new Decimal(target);
+            }
+            if (typeof maxDelta === "number") {
+                maxDelta = new Decimal(maxDelta);
+            }
+            if (Decimal.abs(target.sub(current)).lessThanOrEqualTo(maxDelta)) {
+                return target;
+            }
+            return current.add(Decimal.sign(target.sub(current)).mul(maxDelta));
         }
         /**
          * Unity Mathf.MoveTowardsAngle
@@ -28,9 +46,36 @@ export namespace SpaceAttack {
          * Unity Mathf.Clamp
          */
         public static clamp(value: number, min: number, max: number): number {
+            if (min > max) {
+                const temp = min;
+                min = max;
+                max = temp;
+            }
             if (value < min) {
                 value = min;
             } else if (value > max) {
+                value = max;
+            }
+            return value;
+        }
+        public static clampDecimal(value: Decimal | number, min: Decimal | number, max: Decimal | number): Decimal {
+            if (typeof value === "number") {
+                value = new Decimal(value);
+            }
+            if (typeof min === "number") {
+                min = new Decimal(min);
+            }
+            if (typeof max === "number") {
+                max = new Decimal(max);
+            }
+            if (min.greaterThan(max)) {
+                const temp = min;
+                min = max;
+                max = temp;
+            }
+            if (value.lessThan(min)) {
+                value = min;
+            } else if (value.greaterThan(max)) {
                 value = max;
             }
             return value;
@@ -110,15 +155,19 @@ export namespace SpaceAttack {
             return str;
         };
 
+        public static getRandom() {
+            return Math.random();
+        }
+
         /**
          * 不含最大值，含最小值
          * @param {*} min 
          * @param {*} max 
          */
-        public static getRandomInt(min: number, max: number): number {
+        public static getRandomIntArbitrary(min: number, max: number): number {
             min = Math.ceil(min);
             max = Math.floor(max);
-            return Math.floor(Math.random() * (max - min)) + min;
+            return Math.floor(this.getRandom() * (max - min)) + min;
         };
 
         /**
@@ -129,7 +178,7 @@ export namespace SpaceAttack {
         public static getRandomIntInclusive(min: number, max: number): number {
             min = Math.ceil(min);
             max = Math.floor(max);
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+            return Math.floor(this.getRandom() * (max - min + 1)) + min;
         };
 
         /**
@@ -137,8 +186,8 @@ export namespace SpaceAttack {
          * @param {*} min 
          * @param {*} max 
          */
-        public static getRandom(min: number, max: number): number {
-            return Math.random() * (max - min) + min;
+        public static getRandomArbitrary(min: number, max: number): number {
+            return this.getRandom() * (max - min) + min;
         };
 
         /**
@@ -147,7 +196,160 @@ export namespace SpaceAttack {
          * @param {*} max 
          */
         public static getRandomInclusive(min: number, max: number): number {
-            return Math.random() * (max - min + 1) + min;
+            return this.getRandom() * (max - min + 1) + min;
+        };
+
+        public static getSeedRandom() {
+            SpaceAttack.ConstValue.randomSeed = (SpaceAttack.ConstValue.randomSeed * 9301 + 49297) % 233280;
+            var rnd = SpaceAttack.ConstValue.randomSeed / 233280.0;
+            return rnd;
+        }
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomIntArbitrary(min: number, max: number): number {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(this.getSeedRandom() * (max - min)) + min;
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomIntInclusive(min: number, max: number): number {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(this.getSeedRandom() * (max - min + 1)) + min;
+        };
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomArbitrary(min: number, max: number): number {
+            return this.getSeedRandom() * (max - min) + min;
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomInclusive(min: number, max: number): number {
+            return this.getSeedRandom() * (max - min + 1) + min;
+        };
+
+        public static getRandomDecimal() {
+            return Decimal.random();
+        }
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getRandomIntArbitraryDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            min = Decimal.ceil(min);
+            max = Decimal.floor(max);
+            return Decimal.floor(this.getRandomDecimal().mul(max.sub(min))).add(min);
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getRandomIntInclusiveDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            min = Decimal.ceil(min);
+            max = Decimal.floor(max);
+            return Decimal.floor(this.getRandomDecimal().mul(max.sub(min).add(1))).add(min);
+        };
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getRandomArbitraryDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            return this.getRandomDecimal().mul(max.sub(min)).add(min);
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getRandomInclusiveDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            return this.getRandomDecimal().mul(max.sub(min).add(1)).add(min);
+        };
+
+        public static getSeedRandomDecimal() {
+            SpaceAttack.ConstValue.randomSeedDecimal = (SpaceAttack.ConstValue.randomSeedDecimal.mul(9301).add(49297)).mod(233280);
+            var rnd = SpaceAttack.ConstValue.randomSeedDecimal.div(233280.0);
+            return rnd;
+        }
+
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomIntArbitraryDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            min = Decimal.ceil(min);
+            max = Decimal.floor(max);
+            return Decimal.floor(this.getSeedRandomDecimal().mul(max.sub(min))).add(min);
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomIntInclusiveDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            min = Decimal.ceil(min);
+            max = Decimal.floor(max);
+            return Decimal.floor(this.getSeedRandomDecimal().mul(max.sub(min).add(1))).add(min);
+        };
+
+        /**
+         * 不含最大值，含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomArbitraryDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            return this.getSeedRandomDecimal().mul(max.sub(min)).add(min);
+        };
+
+        /**
+         * 含最大值， 含最小值
+         * @param {*} min 
+         * @param {*} max 
+         */
+        public static getSeedRandomInclusiveDecimal(min: Decimal | number, max: Decimal | number): Decimal {
+            min = typeof min === "number" ? new Decimal(min) : min;
+            max = typeof max === "number" ? new Decimal(max) : max;
+            return this.getSeedRandomDecimal().mul(max.sub(min).add(1)).add(min);
         };
     }
 
@@ -162,6 +364,22 @@ export namespace SpaceAttack {
                 let normalized_x = vector.x / mag;
                 let normalized_y = vector.y / mag;
                 return new Vec2(normalized_x * maxLength, normalized_y * maxLength);
+            }
+            return vector;
+        }
+        public static clampMagnitudeDecimal(vector: DecimalVec2 | Vec2, maxLength: Decimal | number): DecimalVec2 {
+            if (vector instanceof Vec2) {
+                vector = new DecimalVec2(vector);
+            }
+            if (typeof maxLength === "number") {
+                maxLength = new Decimal(maxLength);
+            }
+            let sqrMagnitude = vector.lengthSqr();
+            if (sqrMagnitude.greaterThan(maxLength.mul(maxLength))) {
+                let mag = Decimal.sqrt(sqrMagnitude);
+                let normalized_x = vector.x.div(mag);
+                let normalized_y = vector.y.div(mag);
+                return new DecimalVec2(normalized_x.mul(maxLength), normalized_y.mul(maxLength));
             }
             return vector;
         }
@@ -182,8 +400,8 @@ export namespace SpaceAttack {
     }
 
     export class ConstValue {
-        public static readonly allowedArea = new Rect(-9.5, -14, 19, 28);
-        public static readonly baseSpeed = 10;
+        public static readonly allowedArea = new DecimalRect(-9.5, -14, 19, 28);
+        public static readonly baseSpeed = new Decimal(10);
         public static readonly mgobe_gameId: string = 'obg-7pl76q6r';
         public static readonly mgobe_config: MGOBE.types.ConfigPara = {
             url: '7pl76q6r.wxlagame.com',
@@ -204,7 +422,10 @@ export namespace SpaceAttack {
             }
         }
 
-        public static isSingleMode = false;
+        public static isSingleMode = true;
+
+        public static randomSeed = 1;
+        public static randomSeedDecimal = new Decimal(1);
     }
 
     export class SysTools {
