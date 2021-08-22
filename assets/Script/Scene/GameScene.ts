@@ -35,9 +35,9 @@ export class GameScene extends Component {
             if (node.name.startsWith("spacecraft")) {
                 node.destroy();
             } else if (node.name.startsWith("enemy")) {
-                node.getComponent(Enemy)!.enemyDead();
+                node.getComponent(Enemy)!.dead();
             } else if (node.name.startsWith("bullet")) {
-                node.getComponent(Bullet)!.bulletDead();
+                node.getComponent(Bullet)!.dead();
             }
         }
         this._startPoint = [0, 1];

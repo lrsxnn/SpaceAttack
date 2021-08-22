@@ -6,7 +6,6 @@ const { ccclass, property } = _decorator;
 @ccclass('FlyNode')
 export abstract class FlyNode extends BaseComponent {
     private _pool: NodePool = null!;
-    protected _controller: BaseComponent | null = null;
     protected _collider: Collider | null = null;
     public isAlive = false;
 

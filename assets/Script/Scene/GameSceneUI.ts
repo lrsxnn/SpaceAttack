@@ -60,7 +60,9 @@ export class GameSceneUI extends Component {
         NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_STARTFRAMESYNC);
         NotificationCenter.removeObserver(this, NotificationMessage.BROADCAST_ROOM_STOPFRAMESYNC);
 
-        RoomManager.clear();
+        if (!SpaceAttack.ConstValue.isSingleMode) {
+            RoomManager.clear();
+        }
     }
 
     /**
